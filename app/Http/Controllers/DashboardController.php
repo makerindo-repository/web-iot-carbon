@@ -38,72 +38,72 @@ class DashboardController extends Controller
 
         $n = $rawData->map(fn($d) => [
             'x' => Carbon::parse($d->created_at)->timezone('Asia/Jakarta')->format('Y-m-d H:i:s'),
-            'y' => $d->samples->Nitrogen,
+            'y' => $d->samples->Nitrogen ?? 0,
         ]);
 
         $nFiltered = $filteredData->map(fn($d) => [
             'x' => Carbon::parse($d->created_at)->timezone('Asia/Jakarta')->format('Y-m-d H:i:s'),
-            'y' => $d->samples->Nitrogen,
+            'y' => $d->samples->Nitrogen ?? 0,
         ]);
 
         $p = $rawData->map(fn($d) => [
             'x' => Carbon::parse($d->created_at)->timezone('Asia/Jakarta')->format('Y-m-d H:i:s'),
-            'y' => $d->samples->Phosporus,
+            'y' => $d->samples->Phosporus ?? 0,
         ]);
 
         $pFiltered = $filteredData->map(fn($d) => [
             'x' => Carbon::parse($d->created_at)->timezone('Asia/Jakarta')->format('Y-m-d H:i:s'),
-            'y' => $d->samples->Phosporus,
+            'y' => $d->samples->Phosporus ?? 0,
         ]);
 
         $k = $rawData->map(fn($d) => [
             'x' => Carbon::parse($d->created_at)->timezone('Asia/Jakarta')->format('Y-m-d H:i:s'),
-            'y' => $d->samples->Kalium,
+            'y' => $d->samples->Kalium ?? 0,
         ]);
 
         $kFiltered = $filteredData->map(fn($d) => [
             'x' => Carbon::parse($d->created_at)->timezone('Asia/Jakarta')->format('Y-m-d H:i:s'),
-            'y' => $d->samples->Kalium,
+            'y' => $d->samples->Kalium ?? 0,
         ]);
 
         $ec = $rawData->map(fn($d) => [
             'x' => Carbon::parse($d->created_at)->timezone('Asia/Jakarta')->format('Y-m-d H:i:s'),
-            'y' => $d->samples->Ec,
+            'y' => $d->samples->Ec ?? 0,
         ]);
 
         $ecFiltered = $filteredData->map(fn($d) => [
             'x' => Carbon::parse($d->created_at)->timezone('Asia/Jakarta')->format('Y-m-d H:i:s'),
-            'y' => $d->samples->Ec,
+            'y' => $d->samples->Ec ?? 0,
         ]);
 
         $ph = $rawData->map(fn($d) => [
             'x' => Carbon::parse($d->created_at)->timezone('Asia/Jakarta')->format('Y-m-d H:i:s'),
-            'y' => $d->samples->Ph,
+            'y' => $d->samples->Ph ?? 0,
         ]);
 
         $phFiltered = $filteredData->map(fn($d) => [
             'x' => Carbon::parse($d->created_at)->timezone('Asia/Jakarta')->format('Y-m-d H:i:s'),
-            'y' => $d->samples->Ph,
+            'y' => $d->samples->Ph ?? 0,
         ]);
 
         $temp = $rawData->map(fn($d) => [
             'x' => Carbon::parse($d->created_at)->timezone('Asia/Jakarta')->format('Y-m-d H:i:s'),
-            'y' => $d->samples->Temperature,
+            'y' => $d->samples->Temperature ?? 0,
         ]);
 
         $tempFiltered = $filteredData->map(fn($d) => [
             'x' => Carbon::parse($d->created_at)->timezone('Asia/Jakarta')->format('Y-m-d H:i:s'),
-            'y' => $d->samples->Temperature,
+            'y' => $d->samples->Temperature ?? 0,
         ]);
 
         $humid = $rawData->map(fn($d) => [
             'x' => Carbon::parse($d->created_at)->timezone('Asia/Jakarta')->format('Y-m-d H:i:s'),
-            'y' => $d->samples->Humidity,
+            'y' => $d->samples->Humidity ?? 0,
         ]);
 
         $humidFiltered = $filteredData->map(fn($d) => [
             'x' => Carbon::parse($d->created_at)->timezone('Asia/Jakarta')->format('Y-m-d H:i:s'),
-            'y' => $d->samples->Humidity,
+            'y' => $d->samples->Humidity ?? 0,
         ]);
 
         return view('pages.dashboard.index', compact('upcomingActivities', 'lecturers', 'students', 'devices', 'activitySchedules', 'n', 'nFiltered', 'p', 'pFiltered', 'k', 'kFiltered', 'ec', 'ecFiltered', 'ph', 'phFiltered', 'temp', 'tempFiltered', 'humid', 'humidFiltered'));
