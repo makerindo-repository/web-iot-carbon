@@ -182,18 +182,18 @@ class RSCDataController extends Controller
     {
         $request->validate([
             'device_id' => 'required',
-            'soilrs485.Nitrogen' => 'nullable',
-            'soilrs485.Phosporus' => 'nullable',
-            'soilrs485.Kalium' => 'nullable',
-            'soilrs485.Ec' => 'nullable',
-            'soilrs485.Ph' => 'nullable',
-            'soilrs485.Temperature' => 'nullable',
-            'soilrs485.Humidity' => 'nullable',
+            'samples.Nitrogen' => 'nullable',
+            'samples.Phosporus' => 'nullable',
+            'samples.Kalium' => 'nullable',
+            'samples.Ec' => 'nullable',
+            'samples.Ph' => 'nullable',
+            'samples.Temperature' => 'nullable',
+            'samples.Humidity' => 'nullable',
         ]);
 
         $data = [
             'device_id' => $request->device_id,
-            'samples' => $request->soilrs485,
+            'samples' => $request->samples,
         ];
 
         $fixStation = FixStation::create($data);
