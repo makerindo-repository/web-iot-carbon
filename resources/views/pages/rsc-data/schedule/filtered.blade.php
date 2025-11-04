@@ -93,14 +93,14 @@
                                 @foreach ($data as $item)
                                     <tr>
                                         <td>{{ $item->created_at }}</td>
-                                        <td>{{ $item->device_id }}</td>
-                                        <td>{{ $item->samples->Nitrogen }} mg/kg</td>
-                                        <td>{{ $item->samples->Phosporus }} mg/kg</td>
-                                        <td>{{ $item->samples->Kalium }} mg/kg</td>
-                                        <td>{{ $item->samples->Ec }} uS/cm</td>
-                                        <td>{{ $item->samples->Ph }}</td>
-                                        <td>{{ $item->samples->Temperature }} &deg;C</td>
-                                        <td>{{ $item->samples->Humidity }} %</td>
+                                        <td>{{ $item->device_id ?? '-' }}</td>
+                                        <td>{{ $item->samples->Nitrogen ?? 0 }} mg/kg</td>
+                                        <td>{{ $item->samples->Phosporus ?? 0 }} mg/kg</td>
+                                        <td>{{ $item->samples->Kalium ?? 0 }} mg/kg</td>
+                                        <td>{{ $item->samples->Ec ?? 0 }} uS/cm</td>
+                                        <td>{{ $item->samples->Ph ?? 0 }}</td>
+                                        <td>{{ $item->samples->Temperature ?? 0 }} &deg;C</td>
+                                        <td>{{ $item->samples->Humidity ?? 0 }} %</td>
                                         <td class="flex space-x-3 items-center">
                                             <!-- Button untuk prompt rekomendasi tanaman ke gemini -->
                                             <button id="openModalBtn" class="rounded-lg" data-id="{{ $item->id }}">
