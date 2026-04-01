@@ -1,0 +1,197 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+    .sidebar-open {
+        @apply translate-x-0 w-64;
+    }
+
+    .sidebar-close {
+        @apply -translate-x-full w-0;
+    }
+}
+
+@layer base {
+    @import url('https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&display=swap');
+
+    .lato-thin {
+        font-family: "Lato", sans-serif;
+        font-weight: 100;
+        font-style: normal;
+    }
+
+    .lato-light {
+        font-family: "Lato", sans-serif;
+        font-weight: 300;
+        font-style: normal;
+    }
+
+    .lato-regular {
+        font-family: "Lato", sans-serif;
+        font-weight: 400;
+        font-style: normal;
+    }
+
+    .lato-bold {
+        font-family: "Lato", sans-serif;
+        font-weight: 700;
+        font-style: normal;
+    }
+
+    .lato-black {
+        font-family: "Lato", sans-serif;
+        font-weight: 900;
+        font-style: normal;
+    }
+
+    .lato-thin-italic {
+        font-family: "Lato", sans-serif;
+        font-weight: 100;
+        font-style: italic;
+    }
+
+    .lato-light-italic {
+        font-family: "Lato", sans-serif;
+        font-weight: 300;
+        font-style: italic;
+    }
+
+    .lato-regular-italic {
+        font-family: "Lato", sans-serif;
+        font-weight: 400;
+        font-style: italic;
+    }
+
+    .lato-bold-italic {
+        font-family: "Lato", sans-serif;
+        font-weight: 700;
+        font-style: italic;
+    }
+
+    .lato-black-italic {
+        font-family: "Lato", sans-serif;
+        font-weight: 900;
+        font-style: italic;
+    }
+
+    /* scrollbar */
+    ::-webkit-scrollbar {
+        width: 5px;
+        height: 0px;
+    }
+
+    ::-webkit-scrollbar-track {
+        background: transparent;
+        border-radius: 15px;
+    }
+
+    ::-webkit-scrollbar-thumb {
+        background: #e2232a;
+        border-radius: 15px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+        background: #e2232a;
+    }
+
+
+    table {
+        caption-side: bottom;
+        border-collapse: collapse;
+    }
+
+    thead,
+    tbody,
+    tfoot,
+    tr,
+    td,
+    th {
+        border-color: inherit;
+        border-style: solid;
+        border-width: 0;
+    }
+
+    .text-fertimads {
+        color: #263B91 !important;
+    }
+
+    .text-primary {
+        color: #e2232a !important;
+    }
+
+    .text-fertimads-2 {
+        color: #263B91 !important;
+    }
+
+    .text-warning {
+        color: #1449EF !important;
+    }
+
+    .text-info {
+        color: #39CF87 !important;
+    }
+
+    .text-danger {
+        color: #DD5656 !important;
+    }
+
+    .bg-primary {
+        background-color: #e2232a !important;
+    }
+
+    .bg-fertimads-2 {
+        background-color: #263B91 !important;
+    }
+
+    .bg-warning {
+        background-color: #1449EF !important;
+    }
+
+    .menu-item {
+        @apply my-0.5 w-64 basis-auto flex-col m-0 p-0 list-none items-start justify-start;
+    }
+
+    .menu-link {
+        @apply rounded-md font-semibold mx-4 text-sm px-4 py-2.5 relative flex items-center flex-shrink basis-auto m-0 hover:bg-slate-200 hover:bg-opacity-25;
+    }
+
+    .menu-icon {
+        @apply w-6 flex-grow-0 flex-shrink-0 p-2 mr-4 text-base text-primary rounded-xl;
+    }
+
+    .active-icon {
+        @apply text-white bg-primary;
+    }
+
+    .table> :not(caption)>*>* {
+        @apply border-b py-2.5 px-5;
+    }
+
+    .table-border-bottom-0 tr:last-child td,
+    .table-border-bottom-0 tr:last-child th {
+        border-bottom-width: 0;
+    }
+
+    .breadcrumb {
+        @apply flex flex-wrap p-0 mb-4 list-none bg-transparent mt-0;
+    }
+
+    .breadcrumb-item,
+    .breadcrumb-item a {
+        @apply text-slate-400;
+    }
+
+    .breadcrumb-active {
+        @apply font-semibold text-slate-600;
+    }
+
+    .breadcrumb-item+.breadcrumb-item {
+        @apply pl-2;
+    }
+
+    .breadcrumb-item+.breadcrumb-item::before {
+        content: "/";
+        @apply float-left pr-2 text-slate-400;
+    }
+}
