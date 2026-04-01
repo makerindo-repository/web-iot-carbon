@@ -57,17 +57,6 @@
                     </li>
                 @endif
                 <li class="menu-item">
-                    <a href="{{ route('activity-schedule.index') }}" class="menu-link">
-                        <i @class([
-                            'menu-icon',
-                            'active-icon' => request()->routeIs('activity-schedule.*'),
-                            'fa-solid',
-                            'fa-calendar-days',
-                        ])></i>
-                        <div class="text-slate-500">Jadwal Kegiatan Praktikum</div>
-                    </a>
-                </li>
-                <li class="menu-item">
                     <a href="{{ route('rsc-data.index') }}" class="menu-link">
                         <i @class([
                             'menu-icon',
@@ -75,7 +64,7 @@
                             'fa-solid',
                             'fa-vial',
                         ])></i>
-                        <div class="text-slate-500">Data Rapid Soil Checker (RSC)</div>
+                        <div class="text-slate-500">Data IoT Node</div>
                     </a>
                 </li>
                 <li class="menu-item">
