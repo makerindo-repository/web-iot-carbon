@@ -50,6 +50,16 @@
             </div>
 
             <div class="bg-white rounded-xl shadow p-6 mb-6">
+                <h2 class="text-xl font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                    <i class="fa-solid fa-map-location-dot text-blue-500"></i>
+                    Peta
+                </h2>
+                
+                <!-- Peta Component Leaflet -->
+                <x-maps.leaflet />
+            </div>
+
+            <div class="bg-white rounded-xl shadow p-6 mb-6">
                 <div class="flex justify-between items-center mb-4">
                     <h2 class="text-xl font-semibold text-gray-800 flex items-center gap-2">
                         <i class="fa-solid fa-chart-line text-blue-500"></i>

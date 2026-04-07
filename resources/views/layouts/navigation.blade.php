@@ -10,7 +10,7 @@
                             d="M4 6h16M4 12h16M4 18h16" />
                     </svg>
                 </button>
-                <img src="{{ asset('images/logo-upi-horizontal.png') }}" alt="UPI" srcset=""
+                <img src="{{ asset('images\logo-unikom-unggul.webp') }}" alt="UNIKOM" srcset=""
                     class="h-full object-cover" />
             </div>
 

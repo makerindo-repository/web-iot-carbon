@@ -1,6 +1,10 @@
+/* Leaflet CSS --> */
+@import 'leaflet/dist/leaflet.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
 
 @layer components {
     .sidebar-open {
@@ -87,12 +91,12 @@
     }
 
     ::-webkit-scrollbar-thumb {
-        background: #e2232a;
+        background: #005596;
         border-radius: 15px;
     }
 
     ::-webkit-scrollbar-thumb:hover {
-        background: #e2232a;
+        background: #005596;
     }
 
 
@@ -113,19 +117,19 @@
     }
 
     .text-fertimads {
-        color: #263B91 !important;
+        color: #005596 !important;
     }
 
     .text-primary {
-        color: #e2232a !important;
+        color: #005596 !important;
     }
 
     .text-fertimads-2 {
-        color: #263B91 !important;
+        color: #005596 !important;
     }
 
     .text-warning {
-        color: #1449EF !important;
+        color: #fec311 !important;
     }
 
     .text-info {
@@ -137,15 +141,15 @@
     }
 
     .bg-primary {
-        background-color: #e2232a !important;
+        background-color: #005596 !important;
     }
 
     .bg-fertimads-2 {
-        background-color: #263B91 !important;
+        background-color: #005596 !important;
     }
 
     .bg-warning {
-        background-color: #1449EF !important;
+        background-color: #fec311 !important;
     }
 
     .menu-item {

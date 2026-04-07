@@ -6,7 +6,7 @@
         @csrf
 
         <div>
-            <h2 class="text-3xl font-bold mb-3" style="color: #740101;">Sign In</h2>
+            <h2 class="text-3xl font-bold mb-3" style="color: #005596;">Sign In</h2>
             <span class="text-slate-400">Enter your email and password to sign in!</span>
         </div>
 
