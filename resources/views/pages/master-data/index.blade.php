@@ -31,6 +31,30 @@
                             </div>
                         </div>
                     </a>
+                    <a href="{{ route('land-plot.index') }}" class="block">
+                        <div
+                            class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6 flex flex-row justify-between items-center">
+                            <div>
+                                <h5 class="text-md text-black font-bold">Data Lahan</h5>
+                            </div>
+                            <div class="flex items-center">
+                                <i class="fa-solid fa-map-location-dot p-3 bg-primary text-white rounded-lg"></i>
+                            </div>
+                        </div>
+                    </a>
+                    <!-- data kebun -->
+                    <a href="{{ route('garden.index') }}" class="block">
+                        <div
+                            class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6 flex flex-row justify-between items-center">
+                            <div>
+                                <h5 class="text-md text-black font-bold">Data Kebun</h5>
+                            </div>
+                            <div class="flex items-center">
+                                <i class="fa-solid fa-leaf p-3 bg-primary text-white rounded-lg"></i>
+                            </div>
+                        </div>
+                    </a>
+
                 @endif
                 @if (Auth::user()->role == 'superuser')
                     <a href="{{ route('lecturer.index') }}" class="block">

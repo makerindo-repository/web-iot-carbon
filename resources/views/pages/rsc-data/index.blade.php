@@ -52,6 +52,17 @@
                         </div>
                     </div>
                 </a>
+                <a href="{{ route('rsc-data.bmkg.index') }}" class="block">
+                    <div
+                        class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6 flex flex-row justify-between items-center">
+                        <div>
+                            <h5 class="text-md text-black font-bold">Laporan Cuaca BMKG</h5>
+                        </div>
+                        <div class="flex items-center">
+                            <i class="fa-solid fa-cloud-showers-heavy p-3 bg-primary text-white rounded-lg"></i>
+                        </div>
+                    </div>
+                </a>
                 <a href="{{ route('rsc-data.sensor-threshold.index') }}" class="block">
                     <div
                         class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6 flex flex-row justify-between items-center">
