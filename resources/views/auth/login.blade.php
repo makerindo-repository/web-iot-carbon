@@ -36,13 +36,14 @@
                 <span class="ms-2 text-sm text-gray-600">{{ __('Remember me') }}</span>
             </label>
         </div>
-
-        <div class="mt-4">
+        
+        <!-- development -->
+        <!-- <div class="mt-4">
             {!! NoCaptcha::display() !!}
             @error('g-recaptcha-response')
                 <p class="text-red-500 text-sm mt-2">{{ $message }}</p>
             @enderror
-        </div>
+        </div> -->
 
         <div class="mt-4">
             <x-primary-button class="w-full justify-center">

@@ -16,14 +16,15 @@
             }
 
             .dataTables_wrapper .dataTables_paginate .paginate_button.current {
-                background-color: #EF4444 !important;
-                color: #ffffff !important;
+                background-color: #f3f4f6 !important;
+                color: #374151 !important;
                 font-weight: 600 !important;
+                border: 1px solid #d1d5db !important;
             }
 
             .dataTables_wrapper .dataTables_paginate .paginate_button.current:hover {
-                background-color: #DC2626 !important;
-                color: #ffffff !important;
+                background-color: #e5e7eb !important;
+                color: #374151 !important;
             }
         </style>
     @endpush
@@ -46,18 +47,33 @@
                     <div class="flex flex-col space-y-4 mb-4">
                         <div class="flex flex-col sm:flex-row justify-between sm:items-center space-y-4 sm:space-y-0">
                             <h1 class="text-3xl font-extrabold">Data Klimatologi BMKG</h1>
-                            <form action="{{ route('rsc-data.bmkg.clear') }}" method="POST" id="clearDataForm">
-                                @csrf
-                                <button type="submit"
-                                    class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 w-auto">
-                                    Clear Data
-                                </button>
-                            </form>
                         </div>
                         <div>
                             <p class="text-sm text-gray-500">
                                 Data di bawah diambil dari API Open Data BMKG.
                             </p>
+                        </div>
+                        <div class="flex flex-col sm:flex-row justify-between items-center mt-6 z-10 relative">
+                            <div id="export-btn-container"></div>
+                            
+                            @if (in_array(Auth::user()->role, ['superuser', 'dosen']))
+                                <div class="flex flex-row space-x-2 mt-4 sm:mt-0">
+                                    <form action="{{ route('bmkg.clear') }}" method="POST" id="clearDataForm">
+                                        @csrf
+                                        <button type="submit"
+                                            class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 hover:scale-105 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-red-500 w-auto shadow-sm">
+                                            Clear Data
+                                        </button>
+                                    </form>
+                                    <form action="{{ route('bmkg.fetch') }}" method="POST" id="fetchDataForm">
+                                        @csrf
+                                        <button type="submit"
+                                            class="bg-blue-500 text-white px-8 py-2 rounded-lg hover:bg-blue-600 hover:scale-105 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 font-semibold w-auto whitespace-nowrap shadow-sm">
+                                            <i class="fa fa-sync-alt mr-2"></i> Ambil Data Cuaca Terkini
+                                        </button>
+                                    </form>
+                                </div>
+                            @endif
                         </div>
                     </div>
                 </div>
@@ -93,7 +109,7 @@
                                     <!-- Delete button -->
                                     @if (in_array(Auth::user()->role, ['superuser', 'dosen']))
                                         <td>
-                                            <form action="{{ route('rsc-data.bmkg.destroy', ['id' => $item->id]) }}"
+                                            <form action="{{ route('bmkg.destroy', ['id' => $item->id]) }}"
                                                 method="POST" class="delete-form"
                                                 data-series="{{ $item->reference_time }}">
                                                 @csrf
@@ -120,12 +136,12 @@
             $('#bmkg-table').DataTable({
                 responsive: true,
                 ordering: false,
-                dom: '<"ms-5 mb-2"B>rtp',
+                dom: '<"hidden"B>rtp',
                 buttons: [{
                     extend: 'excel',
                     text: 'Export Excel',
                     title: 'Data Cuaca BMKG',
-                    className: 'bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600'
+                    className: 'bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600 hover:scale-105 transition-all duration-200'
                 }],
                 columnDefs: [{
                     className: "text-center",
@@ -139,6 +155,8 @@
                     }
                 }
             });
+
+            $('.dt-buttons').detach().appendTo('#export-btn-container').removeClass('hidden');
 
             @if (session('success'))
                 Swal.fire({
@@ -184,8 +202,18 @@
                     }
                 });
             });
+            document.getElementById('fetchDataForm').addEventListener('submit', function(event) {
+            Swal.fire({
+                title: 'Memproses...',
+                    text: 'Sedang mengambil data dari API OpenWeather',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
         });
-
+        });
+     
         </script>
     @endpush
 </x-app-layout>

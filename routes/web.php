@@ -44,6 +44,9 @@ Route::middleware('auth')->group(function () {
     // Index Log Aktivitas
     Route::get('/activity-log', [ActivityLogController::class, 'index'])->name('activity-log.index');
 
+
+    Route::get('/bmkg', [BmkgController::class, 'index'])->name('bmkg.index');
+
     // Pembayaran subscription & Callback midtrans
     Route::get('/payment/create/{planId}', [PaymentController::class, 'createTransaction'])->name('payment.create');
 
@@ -57,7 +60,6 @@ Route::middleware('auth')->group(function () {
         Route::get('/schedule/show-filtered/{id}', [RSCDataController::class, 'showFilteredPenjadwalan'])->name('filtered-schedule.show');
         Route::get('/monitoring/device-ids', [RSCDataController::class, 'getUniqueDeviceIds'])->name('monitoring.device-ids');
         Route::get('/filtered-monitoring/device-ids', [RSCDataController::class, 'getFilteredUniqueDeviceIds'])->name('filtered-monitoring.device-ids');
-        Route::get('/bmkg', [BmkgController::class, 'index'])->name('bmkg.index');
     });
 
     // Akses Fitur Khusus Dosen & Superuser
@@ -128,8 +130,11 @@ Route::middleware('auth')->group(function () {
         ]);
 
         // Delete data BMKG
-        Route::delete('/bmkg/{id}', [BmkgController::class, 'destroy'])->name('rsc-data.bmkg.destroy');
-        Route::post('/bmkg/clear', [BmkgController::class, 'clearBmkgData'])->name('rsc-data.bmkg.clear');
+        Route::delete('/bmkg/{id}', [BmkgController::class, 'destroy'])->name('bmkg.destroy');
+        Route::post('/bmkg/clear', [BmkgController::class, 'clearBmkgData'])->name('bmkg.clear');
+
+        // Fetch data BMKG
+        Route::post('/bmkg/fetch', [BmkgController::class, 'fetchWeatherData'])->name('bmkg.fetch');
 
         // Hapus data RSC
         Route::delete('/rsc-data/{id}', [RSCDataController::class, 'destroy'])->name('rsc-data.destroy');

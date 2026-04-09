@@ -52,7 +52,7 @@
                         </div>
                     </div>
                 </a>
-                <a href="{{ route('rsc-data.bmkg.index') }}" class="block">
+                <a href="{{ route('bmkg.index') }}" class="block">
                     <div
                         class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6 flex flex-row justify-between items-center">
                         <div>
