@@ -6,9 +6,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>{{ config('app.name', 'Laravel') }}</title>
+    <title>{{ config('app.name', 'Dashboard Unikom') }}</title>
 
-    <link rel="icon" href="{{ asset('images/logo-upi.png') }}">
+    <link rel="icon" href="{{ asset('images/logo-unikom.png') }}">
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
@@ -101,7 +101,7 @@
             const appLogo = document.getElementById('app-logo');
             const menuFooter = document.getElementById('menu-footer');
             const imgUrl = `/${data.image}`;
-            const fallbackImg = '/images/logo-upi-horizontal.png';
+            const fallbackImg = '/images/logo-unikom-unggul.webp';
 
             const img = new Image();
             img.src = imgUrl;
@@ -133,7 +133,7 @@
             document.getElementById('date-current').textContent = `${day}, ${date}`;
         }
 
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             // Update time every minute at 00 seconds
             updateCurrentTime();
             const now = new Date();

@@ -8,7 +8,7 @@
 
     <title>{{ config('app.name', 'Laravel') }}</title>
 
-    <link rel="icon" href="{{ asset('images/logo-upi.png') }}">
+    <link rel="icon" href="{{ asset('images/logo-unikom.png') }}">
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.bunny.net">
@@ -43,7 +43,7 @@
             const appLogo = document.getElementById('app-logo');
             const loginText = document.getElementById('login-text')
             const imgUrl = `/${data.image}`;
-            const fallbackImg = '/images/logo-upi-horizontal.png';
+            const fallbackImg = '/images/logo-unikom-unggul.webp';
 
             const img = new Image();
             img.src = imgUrl;

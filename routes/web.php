@@ -3,8 +3,11 @@
 use App\Http\Controllers\ActivityLogController;
 use App\Http\Controllers\ActivityScheduleController;
 use App\Http\Controllers\ApplicationSettingController;
+use App\Http\Controllers\BmkgController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DeviceController;
+use App\Http\Controllers\GardenController;
+use App\Http\Controllers\LandPlotController;
 use App\Http\Controllers\LecturerController;
 use App\Http\Controllers\MediaController;
 use App\Http\Controllers\PaymentController;
@@ -14,6 +17,8 @@ use App\Http\Controllers\SensorThresholdController;
 use App\Http\Controllers\StudentController;
 use App\Http\Controllers\SubscriptionController;
 use Illuminate\Support\Facades\Route;
+
+
 
 Route::get('/', function () {
     return redirect()->route('login');
@@ -52,6 +57,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/schedule/show-filtered/{id}', [RSCDataController::class, 'showFilteredPenjadwalan'])->name('filtered-schedule.show');
         Route::get('/monitoring/device-ids', [RSCDataController::class, 'getUniqueDeviceIds'])->name('monitoring.device-ids');
         Route::get('/filtered-monitoring/device-ids', [RSCDataController::class, 'getFilteredUniqueDeviceIds'])->name('filtered-monitoring.device-ids');
+        Route::get('/bmkg', [BmkgController::class, 'index'])->name('bmkg.index');
     });
 
     // Akses Fitur Khusus Dosen & Superuser
@@ -98,6 +104,32 @@ Route::middleware('auth')->group(function () {
             'update' => 'media.update',
             'destroy' => 'media.destroy',
         ]);
+
+        // CRUD Data Lahan
+        Route::resource('land-plot', LandPlotController::class)->names([
+            'index' => 'land-plot.index',
+            'create' => 'land-plot.create',
+            'store' => 'land-plot.store',
+            'show' => 'land-plot.show',
+            'edit' => 'land-plot.edit',
+            'update' => 'land-plot.update',
+            'destroy' => 'land-plot.destroy',
+        ]);
+
+        // CRUD Data Kebun
+        Route::resource('garden', GardenController::class)->names([
+            'index' => 'garden.index',
+            'create' => 'garden.create',
+            'store' => 'garden.store',
+            'show' => 'garden.show',
+            'edit' => 'garden.edit',
+            'update' => 'garden.update',
+            'destroy' => 'garden.destroy',
+        ]);
+
+        // Delete data BMKG
+        Route::delete('/bmkg/{id}', [BmkgController::class, 'destroy'])->name('rsc-data.bmkg.destroy');
+        Route::post('/bmkg/clear', [BmkgController::class, 'clearBmkgData'])->name('rsc-data.bmkg.clear');
 
         // Hapus data RSC
         Route::delete('/rsc-data/{id}', [RSCDataController::class, 'destroy'])->name('rsc-data.destroy');

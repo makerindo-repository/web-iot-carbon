@@ -4,7 +4,7 @@
         id="sidebar">
         <div id="app-brand" class="w-full h-16 mt-3 px-8">
             <a href="#" class="flex items-center" id="app-logo">
-                <img src="{{ asset('images/logo-upi-horizontal.png') }}" alt="" srcset=""
+                <img src="{{ asset('images\logo-unikom-unggul.webp') }}" alt="UNIKOM" srcset=""
                     class="object-cover">
             </a>
         </div>
