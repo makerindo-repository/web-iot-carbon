@@ -10,15 +10,10 @@
                 padding: 0.25rem 0.75rem !important;
                 margin: 1rem 0.25rem !important;
                 border: 1px solid #d1d5db !important;
-                /* gray-300 */
                 border-radius: 0.5rem !important;
-                /* rounded-md */
                 font-size: 1rem !important;
-                /* text-sm */
                 color: #374151;
-                /* gray-700 */
                 background-color: #ffffff !important;
-                /* white */
             }
 
             .dataTables_wrapper .dataTables_paginate .paginate_button:hover {
@@ -27,18 +22,13 @@
 
             .dataTables_wrapper .dataTables_paginate .paginate_button.current {
                 background-color: #EF4444 !important;
-                /* blue-600 */
                 color: #ffffff !important;
-                /* white */
                 font-weight: 600 !important;
-                /* font-semibold */
             }
 
             .dataTables_wrapper .dataTables_paginate .paginate_button.current:hover {
                 background-color: #DC2626 !important;
-                /* blue-600 */
                 color: #ffffff !important;
-                /* white */
             }
         </style>
     @endpush
@@ -66,10 +56,11 @@
                         <thead>
                             <tr>
                                 <th>No</th>
-                                <th>Series</th>
-                                <th>Nama</th>
-                                <th>Tanggal Pemasangan</th>
-                                <th>Tipe Koneksi</th>
+                                <th>Device Code</th>
+                                <th>Lahan</th>
+                                <th>Latitude</th>
+                                <th>Longitude</th>
+                                <th>Status</th>
                                 <th>Aksi</th>
                             </tr>
                         </thead>
@@ -77,11 +68,11 @@
                             @foreach ($devices as $device)
                                 <tr>
                                     <td>{{ $loop->iteration }}</td>
-                                    <td>{{ $device->series }}</td>
-                                    <td>{{ $device->name }}</td>
-                                    <td>{{ $device->installation_date }}</td>
-                                    <td>{{ $device->tipe_koneksi == 'wifi' ? 'WiFi' : ($device->tipe_koneksi == 'lora' ? 'LoRa' : 'GSM') }}
-                                    </td>
+                                    <td>{{ $device->device_code }}</td>
+                                    <td>{{ $device->landPlot->name ?? '-' }}</td>
+                                    <td>{{ $device->latitude }}</td>
+                                    <td>{{ $device->longitude }}</td>
+                                    <td>{{ $device->device_status ?? 'offline' }}</td>
                                     <td class="flex space-x-2 items-center">
                                         <a href="{{ route('device.show', $device->id) }}">
                                             <i class="fa fa-circle-info text-green-500"></i>
@@ -90,7 +81,7 @@
                                             <i class="fa fa-pen text-blue-500"></i>
                                         </a>
                                         <form action="{{ route('device.destroy', $device->id) }}" method="POST"
-                                            class="delete-form" data-series="{{ $device->series }}">
+                                            class="delete-form" data-device-code="{{ $device->device_code }}">
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit">
@@ -109,7 +100,6 @@
 
     @push('scripts')
         <script>
-            // Get current timestamp for filename
             const timestamp = () => {
                 const now = new Date();
                 const date = now.getDate().toString().padStart(2, '0');
@@ -139,7 +129,7 @@
                                 return `data_perangkat_${timestamp()}`;
                             },
                             exportOptions: {
-                                columns: [0, 1, 2, 3, 4]
+                                columns: [0, 1, 2, 3, 4, 5]
                             }
                         },
                         {
@@ -151,7 +141,7 @@
                                 return `data_perangkat_${timestamp()}`;
                             },
                             exportOptions: {
-                                columns: [0, 1, 2, 3, 4]
+                                columns: [0, 1, 2, 3, 4, 5]
                             }
                         },
                         {
@@ -163,7 +153,7 @@
                                 return `data_perangkat_${timestamp()}`;
                             },
                             exportOptions: {
-                                columns: [0, 1, 2, 3, 4]
+                                columns: [0, 1, 2, 3, 4, 5]
                             }
                         },
                     ],
@@ -181,10 +171,10 @@
                         }
                     },
                     columnDefs: [{
-                        targets: [5],
+                        targets: [6],
                         orderable: false
                     }, {
-                        targets: [0, 5],
+                        targets: [0, 6],
                         searchable: false
                     }],
                 });
@@ -204,10 +194,10 @@
                 form.addEventListener('submit', function(event) {
                     event.preventDefault();
 
-                    const deviceSeries = this.getAttribute('data-series');
+                    const deviceCode = this.getAttribute('data-device-code');
                     Swal.fire({
                         title: 'Konfirmasi',
-                        text: `Apakah Anda yakin ingin menghapus data perangkat ${deviceSeries}?`,
+                        text: `Apakah Anda yakin ingin menghapus perangkat ${deviceCode}?`,
                         icon: 'warning',
                         showCancelButton: true,
                         confirmButtonText: 'Ya, Hapus!',

@@ -9,6 +9,15 @@
         </h2>
     </x-slot>
 
+    @push('styles')
+        <style>
+            #map {
+                height: 450px;
+                z-index: 1;
+            }
+        </style>
+    @endpush
+
     <div class="py-12">
         <div class="sm:max-w-7xl flex xl:max-w-full mx-auto sm:px-6 lg:px-8">
             <div class="bg-white overflow-hidden shadow-sm flex-1 sm:rounded-lg px-4">
@@ -16,15 +25,17 @@
                     <h1 class="text-3xl font-extrabold mb-4">Tambah Data Kebun</h1>
                     <form action="{{ route('garden.store') }}" method="POST">
                         @csrf
+                        <input type="hidden" name="polygon" id="polygon" value="{{ old('polygon') }}">
+
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            
                             <div class="w-full md:col-span-2">
-                                <x-input-label for="land_plot_id">{{ __('Pilih Lahan (Induk)') }}</x-input-label>
-                                <select id="land_plot_id" name="land_plot_id" required
-                                    class="block mt-1 w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
-                                    <option value="">-- Pilih Lahan --</option>
-                                    @foreach ($landPlots as $lahan)
-                                        <option value="{{ $lahan->id }}" {{ old('land_plot_id') == $lahan->id ? 'selected' : '' }}>
-                                            {{ $lahan->plot_code }} - {{ $lahan->plot_name }}
+                                <x-input-label for="land_plot_id">{{ __('Pilih Lahan (Induk Kebun)') }}</x-input-label>
+                                <select id="land_plot_id" name="land_plot_id" class="block mt-1 w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" required>
+                                    <option value="" disabled selected>-- Pilih Lahan --</option>
+                                    @foreach($landPlots as $landPlot)
+                                        <option value="{{ $landPlot->id }}" {{ old('land_plot_id') == $landPlot->id ? 'selected' : '' }}>
+                                            {{ $landPlot->plot_name }} ({{ $landPlot->plot_code }})
                                         </option>
                                     @endforeach
                                 </select>
@@ -41,45 +52,146 @@
                             <div class="w-full">
                                 <x-input-label for="garden_name">{{ __('Nama Kebun') }}</x-input-label>
                                 <x-text-input id="garden_name" class="block mt-1 w-full rounded-xl" type="text"
-                                    name="garden_name" :value="old('garden_name')" required placeholder="Contoh: Kebun Singkong A" />
+                                    name="garden_name" :value="old('garden_name')" required placeholder="Contoh: Kebun Tomat 1" />
                                 <x-input-error :messages="$errors->get('garden_name')" class="mt-2" />
                             </div>
 
+                            <div class="w-full md:col-span-2 mt-4">
+                                <x-input-label>{{ __('Gambar Area Kebun di Peta') }}</x-input-label>
+                                <div id="map" class="mt-2 rounded-xl border border-gray-300"></div>
+                                <p class="text-xs text-red-500 mt-1">*Pastikan Anda membuat minimal 4 titik batasan (persegi/poligon) saat menggambar area kebun.</p>
+                                <x-input-error :messages="$errors->get('polygon')" class="mt-2" />
+                            </div>
+
                             <div class="w-full">
-                                <x-input-label for="latitude">{{ __('Latitude') }}</x-input-label>
-                                <x-text-input id="latitude" class="block mt-1 w-full rounded-xl" type="number" step="any"
-                                    name="latitude" :value="old('latitude')" required min="-90" max="90" placeholder="Contoh: -6.1234567" />
+                                <x-input-label for="latitude">{{ __('Latitude (Terisi Otomatis)') }}</x-input-label>
+                                <x-text-input id="latitude" class="block mt-1 w-full rounded-xl bg-gray-100" type="number" step="any"
+                                    name="latitude" :value="old('latitude')" readonly required />
                                 <x-input-error :messages="$errors->get('latitude')" class="mt-2" />
                             </div>
 
                             <div class="w-full">
-                                <x-input-label for="longitude">{{ __('Longitude') }}</x-input-label>
-                                <x-text-input id="longitude" class="block mt-1 w-full rounded-xl" type="number" step="any"
-                                    name="longitude" :value="old('longitude')" required min="-180" max="180" placeholder="Contoh: 107.1234567" />
+                                <x-input-label for="longitude">{{ __('Longitude (Terisi Otomatis)') }}</x-input-label>
+                                <x-text-input id="longitude" class="block mt-1 w-full rounded-xl bg-gray-100" type="number" step="any"
+                                    name="longitude" :value="old('longitude')" readonly required />
                                 <x-input-error :messages="$errors->get('longitude')" class="mt-2" />
                             </div>
 
                             <div class="w-full">
-                                <x-input-label for="area_hectare">{{ __('Luas Area (Hektar)') }}</x-input-label>
-                                <x-text-input id="area_hectare" class="block mt-1 w-full rounded-xl" type="number" step="0.01"
-                                    name="area_hectare" :value="old('area_hectare')" required min="0" max="999999.99" placeholder="Contoh: 0.50" />
+                                <x-input-label for="area_hectare">{{ __('Luas Area / Hektar (Terisi Otomatis)') }}</x-input-label>
+                                <x-text-input id="area_hectare" class="block mt-1 w-full rounded-xl bg-gray-100" type="number" step="0.01"
+                                    name="area_hectare" :value="old('area_hectare')" readonly required />
                                 <x-input-error :messages="$errors->get('area_hectare')" class="mt-2" />
                             </div>
 
                             <div class="w-full">
                                 <x-input-label for="soil_type">{{ __('Jenis Tanah (Opsional)') }}</x-input-label>
                                 <x-text-input id="soil_type" class="block mt-1 w-full rounded-xl" type="text"
-                                    name="soil_type" :value="old('soil_type')" placeholder="Contoh: Lempung" />
+                                    name="soil_type" :value="old('soil_type')" placeholder="Contoh: Lempung berpasir" />
                                 <x-input-error :messages="$errors->get('soil_type')" class="mt-2" />
                             </div>
                         </div>
 
-                        <div class="mt-6 flex justify-end">
-                            <x-primary-button>{{ __('Simpan') }}</x-primary-button>
+                        <div class="mt-6 flex justify-end gap-2">
+                            <a href="{{ route('garden.index') }}" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-xl">Batal</a>
+                            <x-primary-button>{{ __('Simpan Kebun') }}</x-primary-button>
                         </div>
                     </form>
                 </div>
             </div>
         </div>
     </div>
+
+    @push('scripts')
+        <script>
+            document.addEventListener("DOMContentLoaded", () => {
+                const latInput = document.getElementById('latitude');
+                const lngInput = document.getElementById('longitude');
+                const areaInput = document.getElementById('area_hectare');
+                const polygonInput = document.getElementById('polygon');
+
+                const standardIcon = new L.Icon({
+                    iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png',
+                    shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
+                    iconSize: [25, 41],
+                    iconAnchor: [12, 41]
+                });
+
+                // Inisialisasi Peta
+                const map = L.map('map').setView([-0.7893, 113.9213], 5);
+
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    maxZoom: 19,
+                    attribution: '© OpenStreetMap'
+                }).addTo(map);
+
+                if (navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition((position) => {
+                        map.setView([position.coords.latitude, position.coords.longitude], 15);
+                    });
+                }
+
+                // Setup Lapisan Polygon
+                const drawnItems = new L.FeatureGroup();
+                map.addLayer(drawnItems);
+
+                const drawControl = new L.Control.Draw({
+                    edit: {
+                        featureGroup: drawnItems,
+                        remove: true
+                    },
+                    draw: {
+                        polygon: {
+                            allowIntersection: false,
+                            showArea: true,
+                            icon: standardIcon,
+                            shapeOptions: {
+                                color: '#0f8dedff',
+                            }
+                        },
+                        polyline: false,
+                        rectangle: true,
+                        circle: false,
+                        marker: false,
+                        circlemarker: false
+                    }
+                });
+                map.addControl(drawControl);
+
+                map.on(L.Draw.Event.CREATED, function (e) {
+                    const layer = e.layer;
+                    const latlngs = layer.getLatLngs()[0];
+
+                    if (latlngs.length < 4) {
+                        alert("Peringatan: Area Kebun harus mempunyai minimal 4 titik sudut agar akurasi luas terjaga!");
+                        return;
+                    }
+
+                    drawnItems.clearLayers();
+                    drawnItems.addLayer(layer);
+
+                    // Konversi dan Simpan Data json
+                    const geojson = layer.toGeoJSON();
+                    polygonInput.value = JSON.stringify(geojson.geometry);
+
+                    const bounds = layer.getBounds();
+                    const center = bounds.getCenter();
+                    latInput.value = center.lat.toFixed(7);
+                    lngInput.value = center.lng.toFixed(7);
+
+                    const areaSquareMeters = L.GeometryUtil.geodesicArea(latlngs);
+                    const areaHectares = areaSquareMeters / 10000;
+                    areaInput.value = areaHectares.toFixed(3);
+                });
+
+                // Hapus Gambar
+                map.on(L.Draw.Event.DELETED, function () {
+                    latInput.value = '';
+                    lngInput.value = '';
+                    areaInput.value = '';
+                    polygonInput.value = '';
+                });
+            });
+        </script>
+    @endpush
 </x-app-layout>

@@ -20,7 +20,8 @@
                             </div>
                         </div>
                     </a>
-                    <a href="{{ route('media.index') }}" class="block">
+                    <!-- data media -->
+                    <!-- <a href="{{ route('media.index') }}" class="block">
                         <div
                             class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6 flex flex-row justify-between items-center">
                             <div>
@@ -30,7 +31,7 @@
                                 <i class="fa-solid fa-seedling p-3 bg-primary text-white rounded-lg"></i>
                             </div>
                         </div>
-                    </a>
+                    </a> -->
                     <a href="{{ route('land-plot.index') }}" class="block">
                         <div
                             class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6 flex flex-row justify-between items-center">

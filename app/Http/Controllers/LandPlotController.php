@@ -32,6 +32,7 @@ class LandPlotController extends Controller
             'longitude'    => 'required|numeric|between:-180,180',
             'area_hectare' => 'required|numeric|min:0|max:999999.99',
             'soil_type'    => 'nullable|string',
+             'polygon'      => 'required|json'
         ]);
 
         try {
@@ -70,6 +71,7 @@ class LandPlotController extends Controller
             'longitude'    => 'required|numeric|between:-180,180',
             'area_hectare' => 'required|numeric|min:0|max:999999.99',
             'soil_type'    => 'nullable|string',
+            'polygon'      => 'required|json'
         ]);
 
         try {

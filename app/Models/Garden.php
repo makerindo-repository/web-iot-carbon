@@ -9,6 +9,10 @@ class Garden extends Model
 {
     use HasFactory;
     protected $guarded = ['id', 'created_at', 'updated_at'];
+    // Polygon berbentuk json
+    protected $casts = [
+        'polygon' => 'json',
+    ];
 
     public function landPlot()
     {

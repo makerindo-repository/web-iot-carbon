@@ -9,6 +9,11 @@ class LandPlot extends Model
 {
     use HasFactory;
     protected $guarded = ['id', 'created_at', 'updated_at'];
+
+    // prote
+    protected $casts = [
+        'polygon' => 'json',
+    ];
     // Relasi Data Garden
     public function gardens()
     {

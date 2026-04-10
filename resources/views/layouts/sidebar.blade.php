@@ -43,7 +43,7 @@
                         </a>
                     </li>
                 @endif
-                @if (Auth::user()->role == 'superuser')
+                <!-- @if (Auth::user()->role == 'superuser')
                     <li class="menu-item">
                         <a href="{{ route('subscription.index') }}" class="menu-link">
                             <i @class([
@@ -55,7 +55,7 @@
                             <div class="text-slate-500">Manajemen Langganan</div>
                         </a>
                     </li>
-                @endif
+                @endif -->
                 <li class="menu-item">
                     <a href="{{ route('rsc-data.index') }}" class="menu-link">
                         <i @class([

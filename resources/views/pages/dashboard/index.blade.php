@@ -56,7 +56,12 @@
                 </h2>
                 
                 <!-- Peta Component Leaflet -->
-                <x-maps.leaflet />
+                <x-maps.leaflet 
+                    :landPlots="$landPlots" 
+                    :gardens="$gardens" 
+                    :deviceLocations="$deviceLocations" 
+                />
+
             </div>
 
             <div class="bg-white rounded-xl shadow p-6 mb-6">

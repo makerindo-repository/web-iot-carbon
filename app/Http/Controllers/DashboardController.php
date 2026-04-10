@@ -10,6 +10,9 @@ use App\Models\Lecturer;
 use App\Models\Student;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use App\Models\LandPlot;
+use App\Models\Garden;
+
 
 class DashboardController extends Controller
 {
@@ -106,6 +109,10 @@ class DashboardController extends Controller
             'y' => $d->samples->Humidity ?? 0,
         ]);
 
-        return view('pages.dashboard.index', compact('upcomingActivities', 'lecturers', 'students', 'devices', 'activitySchedules', 'n', 'nFiltered', 'p', 'pFiltered', 'k', 'kFiltered', 'ec', 'ecFiltered', 'ph', 'phFiltered', 'temp', 'tempFiltered', 'humid', 'humidFiltered'));
+        // Data Lahan dan Kebun
+        $landPlots = LandPlot::whereNotNull('polygon')->get(['id', 'plot_name', 'polygon', 'latitude', 'longitude']);
+        $gardens = Garden::whereNotNull('polygon')->get(['id', 'garden_name', 'polygon', 'latitude', 'longitude']);
+        $deviceLocations = Device::whereNotNull('latitude')->whereNotNull('longitude')->get(['id', 'device_code', 'latitude', 'longitude']);
+        return view('pages.dashboard.index', compact('upcomingActivities', 'lecturers', 'students', 'devices', 'activitySchedules', 'n', 'nFiltered', 'p', 'pFiltered', 'k', 'kFiltered', 'ec', 'ecFiltered', 'ph', 'phFiltered', 'temp', 'tempFiltered', 'humid', 'humidFiltered', 'landPlots', 'gardens','deviceLocations'));
     }
 }
