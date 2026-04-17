@@ -25,8 +25,8 @@ WORKDIR /var/www/html
 # Copy composer files terlebih dahulu (optimasi cache layer)
 COPY composer.json composer.lock ./
 
-# Install dependencies
-RUN composer install --no-dev --optimize-autoloader --no-scripts
+# Install dependencies (update untuk sinkronisasi lock file)
+RUN composer update --no-dev --optimize-autoloader --no-scripts --no-interaction
 
 # Copy seluruh kode backend
 COPY . .
