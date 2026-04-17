@@ -40,11 +40,12 @@
                                     <td>{{ $item->area_hectare }} Ha</td>
                                     <td>{{ $item->soil_type ?? '-' }}</td>
                                     <td class="flex space-x-2 items-center">
-                                        <!-- Tombol Edit -->
+                                        <a href="{{ route('land-plot.show', $item->id) }}">
+                                            <i class="fa fa-circle-info text-green-500"></i>
+                                        </a>
                                         <a href="{{ route('land-plot.edit', $item->id) }}">
                                             <i class="fa fa-pen text-blue-500 hover:text-blue-700"></i>
                                         </a>
-                                        <!-- Tombol Delete -->
                                         <form action="{{ route('land-plot.destroy', $item->id) }}" method="POST"
                                             class="delete-form" data-name="{{ $item->plot_name }}">
                                             @csrf

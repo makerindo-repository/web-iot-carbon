@@ -57,7 +57,8 @@
                             <tr>
                                 <th>No</th>
                                 <th>Device Code</th>
-                                <th>Lahan</th>
+                                <th>Penempatan</th>
+                                <th>Firmware</th>
                                 <th>Latitude</th>
                                 <th>Longitude</th>
                                 <th>Status</th>
@@ -69,10 +70,37 @@
                                 <tr>
                                     <td>{{ $loop->iteration }}</td>
                                     <td>{{ $device->device_code }}</td>
-                                    <td>{{ $device->landPlot->name ?? '-' }}</td>
+                                    <td>
+                                        @if ($device->landPlot)
+                                            <span class="text-gray-700">
+                                                <strong>Lahan:</strong> {{ $device->landPlot->plot_name }}
+                                            </span>
+                                        @elseif($device->garden)
+                                            <span class="text-gray-700">
+                                                <strong>Kebun:</strong> {{ $device->garden->garden_name }}
+                                            </span>
+                                        @else
+                                            <span class="text-gray-500 italic">
+                                                Belum Terpasang
+                                            </span>
+                                        @endif
+                                    </td>
+                                    <td><code class="text-sm font-mono text-pink-600 bg-pink-50 px-1 rounded">{{ $device->firmware_version ?? 'v0.0.0' }}</code></td>
                                     <td>{{ $device->latitude }}</td>
                                     <td>{{ $device->longitude }}</td>
-                                    <td>{{ $device->device_status ?? 'offline' }}</td>
+                                    <td>
+                                        @if($device->device_status == 'online')
+                                            <span class="flex items-center text-green-600 font-bold uppercase text-xs">
+                                                <span class="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse"></span>
+                                                Online
+                                            </span>
+                                        @else
+                                            <span class="flex items-center text-gray-500 font-bold uppercase text-xs">
+                                                <span class="w-2 h-2 bg-gray-400 rounded-full mr-2"></span>
+                                                Offline
+                                            </span>
+                                        @endif
+                                    </td>
                                     <td class="flex space-x-2 items-center">
                                         <a href="{{ route('device.show', $device->id) }}">
                                             <i class="fa fa-circle-info text-green-500"></i>
@@ -129,7 +157,7 @@
                                 return `data_perangkat_${timestamp()}`;
                             },
                             exportOptions: {
-                                columns: [0, 1, 2, 3, 4, 5]
+                                columns: [0, 1, 2, 3, 4, 5, 6]
                             }
                         },
                         {
@@ -141,7 +169,7 @@
                                 return `data_perangkat_${timestamp()}`;
                             },
                             exportOptions: {
-                                columns: [0, 1, 2, 3, 4, 5]
+                                columns: [0, 1, 2, 3, 4, 5, 6]
                             }
                         },
                         {
@@ -153,7 +181,7 @@
                                 return `data_perangkat_${timestamp()}`;
                             },
                             exportOptions: {
-                                columns: [0, 1, 2, 3, 4, 5]
+                                columns: [0, 1, 2, 3, 4, 5, 6]
                             }
                         },
                     ],
@@ -171,10 +199,10 @@
                         }
                     },
                     columnDefs: [{
-                        targets: [6],
+                        targets: [7],
                         orderable: false
                     }, {
-                        targets: [0, 6],
+                        targets: [0, 7],
                         searchable: false
                     }],
                 });

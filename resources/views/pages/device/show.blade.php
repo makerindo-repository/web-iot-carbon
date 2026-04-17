@@ -14,7 +14,6 @@
     </x-slot>
 
     @push('styles')
-        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
         <style>
             #map-show { height: 350px; z-index: 1; }
         </style>
@@ -34,8 +33,22 @@
                                         <td class="px-6 py-4 border-b">{{ $device->device_code }}</td>
                                     </tr>
                                     <tr>
-                                        <td class="px-6 py-4 border-b font-semibold">Lahan</td>
-                                        <td class="px-6 py-4 border-b">{{ $device->landPlot->name ?? '-' }}</td>
+                                        <td class="px-6 py-4 border-b font-semibold">Penempatan</td>
+                                        <td class="px-6 py-4 border-b">
+                                            @if($device->landPlot)
+                                                <span class="text-blue-600 font-bold">Lahan:</span> {{ $device->landPlot->plot_name }}
+                                            @elseif($device->garden)
+                                                <span class="text-green-600 font-bold">Kebun:</span> {{ $device->garden->garden_name }}
+                                            @else
+                                                -
+                                            @endif
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="px-6 py-4 border-b font-semibold">Versi Firmware</td>
+                                        <td class="px-6 py-4 border-b">
+                                            <code class="text-pink-600 bg-pink-50 px-2 py-1 rounded">{{ $device->firmware_version ?? 'v0.0.0' }}</code>
+                                        </td>
                                     </tr>
                                     <tr>
                                         <td class="px-6 py-4 border-b font-semibold">Latitude</td>
@@ -47,12 +60,18 @@
                                     </tr>
                                     <tr>
                                         <td class="px-6 py-4 border-b font-semibold">Status</td>
-                                        <td class="px-6 py-4 border-b">{{ $device->device_status ?? 'offline' }}</td>
+                                        <td class="px-6 py-4 border-b">
+                                            @if($device->device_status == 'online')
+                                                <span class="text-green-600 font-bold uppercase"><i class="fa fa-circle text-xs mr-1"></i> Online</span>
+                                            @else
+                                                <span class="text-gray-500 font-bold uppercase"><i class="fa fa-circle text-xs mr-1"></i> Offline</span>
+                                            @endif
+                                        </td>
                                     </tr>
                                     <tr>
                                         <td class="px-6 py-4 border-b font-semibold">Terakhir Online</td>
                                         <td class="px-6 py-4 border-b">
-                                            {{ $device->last_seen_at ? \Carbon\Carbon::parse($device->last_seen_at)->translatedFormat('d F Y H:i') : 'Belum pernah online' }}
+                                            {{ $device->last_seen_at ? \Carbon\Carbon::parse($device->last_seen_at)->translatedFormat('d F Y H:i:s') : 'Belum pernah online' }}
                                         </td>
                                     </tr>
                                 </tbody>
@@ -72,7 +91,6 @@
     </div>
 
     @push('scripts')
-        <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
         <script>
             document.addEventListener("DOMContentLoaded", () => {
                 let lat = {{ $device->latitude ?? -6.887 }};

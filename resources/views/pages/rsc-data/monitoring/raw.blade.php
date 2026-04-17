@@ -58,7 +58,7 @@
                         </div>
                         <div>
                             <h3>Terakhir diupdate: <span
-                                    id="datetime-newest-data">{{ $lastUpdated ? \Carbon\Carbon::parse($lastUpdated->created_at)->translatedFormat('d F Y H:i:s') : '-' }}</span>
+                                    id="datetime-newest-data">{{ $lastUpdated ? \Carbon\Carbon::parse($lastUpdated->reading_time)->translatedFormat('d F Y H:i:s') : '-' }}</span>
                             </h3>
                         </div>
                         <!-- Filter Section -->
@@ -123,13 +123,14 @@
                             <tr>
                                 <th class="dt-center">Waktu</th>
                                 <th class="dt-center">ID Perangkat</th>
-                                <th class="dt-center">Nitrogen</th>
-                                <th class="dt-center">Fosfor</th>
-                                <th class="dt-center">Kalium</th>
-                                <th class="dt-center">EC</th>
-                                <th class="dt-center">pH Tanah</th>
+                                <th class="dt-center">CO2 (ppm)</th>
+                                <th class="dt-center">SOC (%)</th>
+                                <th class="dt-center">Carbon Flux</th>
+                                <th class="dt-center">Suhu Udara</th>
+                                <th class="dt-center">Kelembaban Udara</th>
                                 <th class="dt-center">Suhu Tanah</th>
-                                <th class="dt-center">Kelembapan Tanah</th>
+                                <th class="dt-center">Kelembaban Tanah</th>
+                                <th class="dt-center">pH Tanah</th>
                                 @if (in_array(Auth::user()->role, ['superuser', 'dosen']))
                                     <th class="dt-center">Aksi</th>
                                 @endif
@@ -138,21 +139,22 @@
                         <tbody class="table-border-bottom-0" id="fix-station-tbody">
                             @foreach ($data as $item)
                                 <tr>
-                                    <td>{{ $item->created_at }}</td>
-                                    <td>{{ $item->device_id ?? '-' }}</td>
-                                    <td>{{ $item->samples->Nitrogen ?? 0 }} mg/kg</td>
-                                    <td>{{ $item->samples->Phosporus ?? 0 }} mg/kg</td>
-                                    <td>{{ $item->samples->Kalium ?? 0 }} mg/kg</td>
-                                    <td>{{ $item->samples->Ec ?? 0 }} uS/cm</td>
-                                    <td>{{ $item->samples->Ph ?? 0 }}</td>
-                                    <td>{{ $item->samples->Temperature ?? 0 }} &deg;C</td>
-                                    <td>{{ $item->samples->Humidity ?? 0 }} %</td>
+                                    <td>{{ $item->reading_time }}</td>
+                                    <td>{{ $item->device->device_code ?? $item->device_id }}</td>
+                                    <td>{{ $item->co2_sensor ?? 0 }} ppm</td>
+                                    <td>{{ $item->soil_organic_carbon ?? 0 }} %</td>
+                                    <td>{{ $item->carbon_flux ?? 0 }}</td>
+                                    <td>{{ $item->air_temperature_sensor ?? 0 }} &deg;C</td>
+                                    <td>{{ $item->air_humidity_sensor ?? 0 }} %</td>
+                                    <td>{{ $item->soil_temperature ?? 0 }} &deg;C</td>
+                                    <td>{{ $item->soil_moisture ?? 0 }} %</td>
+                                    <td>{{ $item->soil_ph ?? 0 }}</td>
                                     @if (in_array(Auth::user()->role, ['superuser', 'dosen']))
                                         <td>
                                             <form
                                                 action="{{ route('rsc-data.destroy', ['id' => $item->id, 'page' => 'rm']) }}"
                                                 method="POST" class="delete-form"
-                                                data-series="{{ $item->created_at }}">
+                                                data-series="{{ $item->reading_time }}">
                                                 @csrf
                                                 @method('DELETE')
                                                 <button type="submit">
@@ -281,14 +283,14 @@
                 cluster: "{{ config('broadcasting.connections.pusher.options.cluster') }}"
             });
 
-            var channel = pusher.subscribe('sensor-data');
-            channel.bind('SensorData', function(p) {
-                const data = p.raw;
+            var channel = pusher.subscribe('carbon-realtime');
+            channel.bind('data.received', function(p) {
+                const data = p.reading || p;
                 const actionHtml = `
                 <form
                     action="{{ route('rsc-data.destroy', ['id' => '__ID__', 'page' => 'rm']) }}"
                     method="POST" class="delete-form"
-                    data-series="{{ $item->created_at ?? '' }}">
+                    data-series="${data.reading_time}">
                         @csrf
                         @method('DELETE')
                         <button type="submit">
@@ -298,28 +300,30 @@
                 `.replace('__ID__', data.id);
                 @if (in_array(Auth::user()->role, ['superuser', 'dosen']))
                     const newRow = table.row.add([
-                        formatTimestamp(data.created_at),
-                        data.device_id,
-                        `${data.samples.Nitrogen} mg/kg`,
-                        `${data.samples.Phosporus} mg/kg`,
-                        `${data.samples.Kalium} mg/kg`,
-                        `${data.samples.Ec} uS/cm`,
-                        `${data.samples.Ph}`,
-                        `${data.samples.Temperature} &deg;C`,
-                        `${data.samples.Humidity} %`,
+                        data.reading_time,
+                        data.device?.device_code || data.device_id,
+                        `${data.co2_sensor} ppm`,
+                        `${data.soil_organic_carbon} %`,
+                        `${data.carbon_flux}`,
+                        `${data.air_temperature_sensor} &deg;C`,
+                        `${data.air_humidity_sensor} %`,
+                        `${data.soil_temperature} &deg;C`,
+                        `${data.soil_moisture} %`,
+                        `${data.soil_ph}`,
                         actionHtml,
                     ]).draw(false);
                 @else
                     const newRow = table.row.add([
-                        formatTimestamp(data.created_at),
-                        data.device_id,
-                        `${data.samples.Nitrogen} mg/kg`,
-                        `${data.samples.Phosporus} mg/kg`,
-                        `${data.samples.Kalium} mg/kg`,
-                        `${data.samples.Ec} uS/cm`,
-                        `${data.samples.Ph}`,
-                        `${data.samples.Temperature} &deg;C`,
-                        `${data.samples.Humidity} %`,
+                        data.reading_time,
+                        data.device?.device_code || data.device_id,
+                        `${data.co2_sensor} ppm`,
+                        `${data.soil_organic_carbon} %`,
+                        `${data.carbon_flux}`,
+                        `${data.air_temperature_sensor} &deg;C`,
+                        `${data.air_humidity_sensor} %`,
+                        `${data.soil_temperature} &deg;C`,
+                        `${data.soil_moisture} %`,
+                        `${data.soil_ph}`,
                     ]).draw(false);
                 @endif
 

@@ -40,8 +40,11 @@
                                     <td>{{ $item->area_hectare }} Ha</td>
                                     <td>{{ $item->soil_type ?? '-' }}</td>
                                     <td class="flex space-x-2 items-center">
+                                        <a href="{{ route('garden.show', $item->id) }}">
+                                            <i class="fa fa-circle-info text-green-500"></i>
+                                        </a>
                                         <a href="{{ route('garden.edit', $item->id) }}">
-                                            <i class="fa fa-pen text-blue-500 hover:text-blue-700"></i>
+                                            <i class="fa fa-pen text-blue-500 hover:text-green-700"></i>
                                         </a>
                                         <form action="{{ route('garden.destroy', $item->id) }}" method="POST"
                                             class="delete-form" data-name="{{ $item->garden_name }}">

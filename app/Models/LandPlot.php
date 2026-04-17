@@ -8,7 +8,18 @@ use Illuminate\Database\Eloquent\Model;
 class LandPlot extends Model
 {
     use HasFactory;
-    protected $guarded = ['id', 'created_at', 'updated_at'];
+    protected $fillable = [
+        'plot_code',
+        'plot_name',
+        'owner_name',
+        'address',
+        'latitude',
+        'longitude',
+        'area_hectare',
+        'soil_type',
+        'plant_types',
+        'polygon'
+    ];
 
     // prote
     protected $casts = [
@@ -23,6 +34,11 @@ class LandPlot extends Model
     public function bmkgReadings()
     {
         return $this->hasMany(BmkgReading::class, 'plot_id');
+    }
+
+    public function iotReadings()
+    {
+        return $this->hasMany(IotReading::class, 'plot_id');
     }
 
 }

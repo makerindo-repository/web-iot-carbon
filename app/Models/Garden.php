@@ -8,8 +8,17 @@ use Illuminate\Database\Eloquent\Model;
 class Garden extends Model
 {
     use HasFactory;
-    protected $guarded = ['id', 'created_at', 'updated_at'];
-    // Polygon berbentuk json
+    protected $fillable = [
+        'land_plot_id',
+        'garden_code',
+        'garden_name',
+        'latitude',
+        'longitude',
+        'polygon',
+        'area_hectare',
+        'soil_type',
+        'plant_types'
+    ];
     protected $casts = [
         'polygon' => 'json',
     ];

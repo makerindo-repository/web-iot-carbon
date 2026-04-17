@@ -15,10 +15,14 @@ return new class extends Migration
             $table->id();
             $table->string('plot_code');
             $table->string('plot_name');
+            $table->string('owner_name')->nullable();
+            $table->text('address')->nullable();
             $table->decimal('latitude', 10, 7);
             $table->decimal('longitude', 10, 7);
+            $table->json('polygon')->nullable();
             $table->decimal('area_hectare', 8, 2);
             $table->string('soil_type')->nullable();
+            $table->text('plant_types')->nullable();
             $table->timestamps();
         });
     }

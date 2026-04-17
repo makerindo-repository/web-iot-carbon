@@ -18,14 +18,14 @@
                 @if (Auth::user()->role == 'superuser')
                     <x-card-summary href="{{ route('lecturer.index') }}" title="Total Dosen" total="{{ $lecturers }}"
                         icon="fa-solid fa-chalkboard-user" />
-                    <x-card-summary href="{{ route('device.index') }}" title="Total Perangkat"
-                        total="{{ $devices }}" icon="fa-solid fa-satellite-dish" />
+                    <x-card-summary href="{{ route('device.index') }}" title="Total Perangkat" total="{{ $devices }}"
+                        icon="fa-solid fa-satellite-dish" />
                 @endif
                 <x-card-summary href="{{ route('activity-schedule.index') }}" title="Total Jadwal Kegiatan Praktikum"
                     total="{{ $activitySchedules }}" icon="fa-solid fa-calendar-days" />
             </div>
 
-            <div class="bg-white rounded-xl shadow p-6 mb-4">
+            <div class="bg-white rounded-xl shadow p-6">
                 <h2 class="text-xl font-semibold text-gray-800 mb-4 flex items-center gap-2">
                     <i class="fa-solid fa-calendar text-blue-500"></i>
                     Jadwal Kegiatan Mendatang
@@ -49,54 +49,52 @@
                 </div>
             </div>
 
-            <div class="bg-white rounded-xl shadow p-6 mb-6">
-                <h2 class="text-xl font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                    <i class="fa-solid fa-map-location-dot text-blue-500"></i>
-                    Peta
-                </h2>
-                
-                <!-- Peta Component Leaflet -->
-                <x-maps.leaflet 
-                    :landPlots="$landPlots" 
-                    :gardens="$gardens" 
-                    :deviceLocations="$deviceLocations" 
-                />
+            <!-- Spacer Fisik 25px -->
+            <div style="height: 25px;"></div>
 
+            <div class="bg-white rounded-xl shadow mb-12 overflow-hidden border border-gray-100">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 px-6 py-3 bg-white border-b border-gray-100">
+                    <h2 class="text-lg font-bold text-gray-800 flex items-center gap-2">
+                        <i class="fa-solid fa-map-location-dot text-blue-500"></i>
+                        Peta
+                    </h2>
+                    
+                    <!-- Search Bar Peta (Biru Solid Langsung) -->
+                    <div class="flex-none flex shadow-sm rounded-lg overflow-hidden border border-gray-300">
+                        <input type="text" id="map-search" placeholder="Cari..." 
+                            class="px-3 py-1 text-xs border-none focus:ring-0 w-32 sm:w-40 bg-white">
+                        <button id="btn-search" class="text-white px-3 py-1 transition-none" style="background-color: #2563eb !important;">
+                            <i class="fa fa-search text-xs text-white"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Peta dengan Padding p-4 (Paling Aman) -->
+                <div class="p-4">
+                    <x-maps.leaflet 
+                        :landPlots="$landPlots" 
+                        :gardens="$gardens" 
+                        :deviceLocations="$deviceLocations" 
+                    />
+                </div>
             </div>
 
-            <div class="bg-white rounded-xl shadow p-6 mb-6">
-                <div class="flex justify-between items-center mb-4">
-                    <h2 class="text-xl font-semibold text-gray-800 flex items-center gap-2">
-                        <i class="fa-solid fa-chart-line text-blue-500"></i>
+            <!-- Spacer Fisik 25px -->
+            <div style="height: 25px;"></div>
+
+            <div class="bg-white rounded-xl shadow mb-6 overflow-hidden">
+                <div class="p-8 pb-0">
+                    <h2 class="text-xl font-bold text-gray-800 flex items-center gap-3 mt-2 ml-2">
+                        <i class="fa-solid fa-chart-line text-blue-600"></i>
                         Grafik Telemetri 24 Jam Terakhir
                     </h2>
-                    <select name="type" id="type" class="border-gray-400 rounded-md">
-                        <option value="raw">Data Raw</option>
-                        <option value="filtered">Data Filtered</option>
-                    </select>
                 </div>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div class="w-full">
-                        <div id="nitrogenChart"></div>
-                    </div>
-                    <div class="w-full">
-                        <div id="phosporusChart"></div>
-                    </div>
-                    <div class="w-full">
-                        <div id="kaliumChart"></div>
-                    </div>
-                    <div class="w-full">
-                        <div id="ecChart"></div>
-                    </div>
-                    <div class="w-full">
-                        <div id="phChart"></div>
-                    </div>
-                    <div class="w-full">
-                        <div id="tempChart"></div>
-                    </div>
-                    <div class="w-full">
-                        <div id="humidChart"></div>
-                    </div>
+                
+                <!-- Grid 2 Kolom dengan Jarak Atas yang Sangat Luas (mt-32) -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-x-16 gap-y-12 px-10 pb-12 mt-32">
+                    <div id="co2Chart" class="w-full"></div>
+                    <div id="socChart" class="w-full"></div>
+                    <div id="cfChart" class="w-full"></div>
                 </div>
             </div>
 
@@ -106,42 +104,10 @@
         <script src="https://js.pusher.com/8.4.0/pusher.min.js"></script>
         <script>
             // data for chart
-            const nData = {
-                raw: @json($n),
-                filtered: @json($nFiltered)
-            }
+            const co2Data = @json($co2);
+            const socData = @json($soc);
+            const cfData = @json($cf);
 
-            const pData = {
-                raw: @json($p),
-                filtered: @json($pFiltered)
-            }
-
-            const kData = {
-                raw: @json($k),
-                filtered: @json($kFiltered)
-            }
-
-            const ecData = {
-                raw: @json($ec),
-                filtered: @json($ecFiltered)
-            }
-
-            const phData = {
-                raw: @json($ph),
-                filtered: @json($phFiltered)
-            }
-
-            const tempData = {
-                raw: @json($temp),
-                filtered: @json($tempFiltered)
-            }
-
-            const humidData = {
-                raw: @json($humid),
-                filtered: @json($humidFiltered)
-            }
-
-            // generate random color for chart
             const chartColors = [
                 '#42a5f5', // biru
                 '#66bb6a', // hijau
@@ -166,7 +132,6 @@
                 return color;
             }
 
-            // function for render chart
             const renderLineChart = (containerId, title, titleSeries, data, unit = '') => {
                 const chartId = containerId.replace('#', '');
                 const lineColor = getUniqueRandomColor();
@@ -174,60 +139,71 @@
                 const options = {
                     chart: {
                         id: chartId,
-                        type: 'line',
-                        zoom: {
-                            enabled: false
-                        },
-                        toolbar: {
-                            show: false
+                        type: 'area',
+                        height: 250,
+                        zoom: { enabled: false },
+                        toolbar: { show: false },
+                        fontFamily: 'Inter, ui-sans-serif, system-ui',
+                    },
+                    colors: [lineColor],
+                    fill: {
+                        type: 'gradient',
+                        gradient: {
+                            shadeIntensity: 1,
+                            opacityFrom: 0.45,
+                            opacityTo: 0.05,
+                            stops: [0, 100]
                         }
                     },
                     title: {
-                        text: title + (unit ? ` (${unit})` : ''),
-                        align: 'center',
+                        text: title,
+                        align: 'left',
+                        offsetY: 10, // Memberikan jarak agar judul grafik tidak mepet ke atas
                         style: {
-                            fontSize: '16px',
-                            fontWeight: 'bold',
-                            color: '#333'
+                            fontSize: '14px',
+                            fontWeight: '600',
+                            color: '#4b5563'
                         }
                     },
                     series: [{
                         name: titleSeries,
-                        data: data // format: [{ x: '2025-07-22 08:00:00', y: 7.1 }, ...]
+                        data: data
                     }],
                     xaxis: {
                         type: 'datetime',
                         labels: {
                             datetimeUTC: false,
-                            format: 'HH:mm:ss'
+                            format: 'HH:mm',
+                            style: { colors: '#9ca3af' }
                         },
-                        title: {
-                            text: 'Waktu (WIB)'
-                        }
+                        axisBorder: { show: false },
+                        axisTicks: { show: false }
                     },
                     yaxis: {
-                        title: {
-                            text: `${titleSeries} (${unit})`
+                        labels: {
+                            formatter: (val) => val.toFixed(1) + (unit ? ' ' + unit : ''),
+                            style: { colors: '#9ca3af' }
                         }
                     },
                     stroke: {
                         curve: 'smooth',
-                        width: 2,
-                        colors: [lineColor]
+                        width: 3,
                     },
                     markers: {
-                        size: 4,
-                        colors: [lineColor],
-                        strokeColors: '#fff',
-                        strokeWidth: 2
+                        size: 0,
+                        hover: { size: 5 }
+                    },
+                    grid: {
+                        borderColor: '#f3f4f6',
+                        strokeDashArray: 4,
+                        padding: { left: 10, right: 10 }
                     },
                     tooltip: {
-                        x: {
-                            format: 'dd MMM yyyy HH:mm:ss'
-                        },
+                        theme: 'light',
+                        x: { format: 'dd MMM yyyy HH:mm:ss' },
                         y: {
-                            formatter: function(value) {
-                                return value !== null ? value + ' ' + unit : '-';
+                            formatter: function (value) {
+                                return value !== null ? value.toFixed(2) + ' ' + unit : '-';
                             }
                         }
                     }
@@ -237,7 +213,7 @@
                 chart.render();
             }
 
-            // function for update area chart when new data received
+            // function for update area hart when new data received
             const updateLineChart = (chartId, value, timestamp) => {
                 ApexCharts.exec(chartId, 'appendData', [{
                     data: [{
@@ -260,21 +236,22 @@
                 cluster: "{{ config('broadcasting.connections.pusher.options.cluster') }}"
             });
 
-            var channel = pusher.subscribe('sensor-data');
-            channel.bind('SensorData', function(p) {
-                const type = document.getElementById('type').value;
-                const data = type === 'filtered' ? p.filtered : p.raw;
+            var channel = pusher.subscribe('carbon-realtime');
+            channel.bind('data.received', function (p) {
+                // p will contain { reading: {...} } based on the event structure
+                const data = p.reading || p; 
 
-                updateLineChart('nitrogenChart', data.samples.Nitrogen, data.created_at);
-                updateLineChart('phosporusChart', data.samples.Phosporus, data.created_at);
-                updateLineChart('kaliumChart', data.samples.Kalium, data.created_at);
-                updateLineChart('ecChart', data.samples.Ec, data.created_at);
-                updateLineChart('phChart', data.samples.Ph, data.created_at);
-                updateLineChart('tempChart', data.samples.Temperature, data.created_at);
-                updateLineChart('humidChart', data.samples.Humidity, data.created_at);
+                updateLineChart('co2Chart', data.co2_sensor, data.reading_time);
+                updateLineChart('socChart', data.soil_organic_carbon, data.reading_time);
+                updateLineChart('cfChart', data.carbon_flux, data.reading_time);
+
+                // Update Status Marker di Peta secara Real-time
+                if (window.updateMarkerStatus) {
+                    window.updateMarkerStatus(data.device_id, 'online');
+                }
             });
 
-            document.addEventListener('DOMContentLoaded', function() {
+            document.addEventListener('DOMContentLoaded', function () {
                 // countdown for upcoming activities
                 const countdownElements = document.querySelectorAll('.countdown');
 
@@ -318,29 +295,9 @@
                     }, 1000 * 60); // every minute
                 }, msUntilNextMinute);
 
-                document.getElementById('type').addEventListener('change', function() {
-                    const type = this.value;
-                    switchChartData('nitrogenChart', 'Nitrogen', nData[type]);
-                    switchChartData('phosporusChart', 'Phosporus', pData[type]);
-                    switchChartData('kaliumChart', 'Kalium', kData[type]);
-                    switchChartData('ecChart', 'Ec', ecData[type]);
-                    switchChartData('phChart', 'Ph', phData[type]);
-                    switchChartData('tempChart', 'Temperature', tempData[type]);
-                    switchChartData('humidChart', 'Humidity', humidData[type]);
-                });
-
-                renderLineChart('#nitrogenChart', 'Grafik data parameter Nitrogen', 'Nitrogen',
-                    nData.raw, 'mg/kg')
-                renderLineChart('#phosporusChart', 'Grafik data parameter Phosporus', 'Phosporus',
-                    pData.raw, 'mg/kg')
-                renderLineChart('#kaliumChart', 'Grafik data parameter Kalium', 'Kalium', kData.raw,
-                    'mg/kg')
-                renderLineChart('#ecChart', 'Grafik data parameter Ec', 'Ec', ecData.raw, 'uS/cm')
-                renderLineChart('#phChart', 'Grafik data parameter Ph', 'Ph', phData.raw)
-                renderLineChart('#tempChart', 'Grafik data parameter Temperature', 'Temperature',
-                    tempData.raw, '\u00B0C')
-                renderLineChart('#humidChart', 'Grafik data parameter Humidity', 'Humidity',
-                    humidData.raw, '%')
+                renderLineChart('#co2Chart', 'Grafik CO2', 'CO2', co2Data, 'ppm')
+                renderLineChart('#socChart', 'Grafik Soil Organic Carbon', 'SOC', socData, '%')
+                renderLineChart('#cfChart', 'Grafik Carbon Flux', 'Carbon Flux', cfData, 'g/m2/h')
             });
         </script>
     @endpush

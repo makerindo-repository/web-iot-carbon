@@ -12,7 +12,8 @@
     @push('styles')
         <style>
             #map {
-                height: 450px;
+                height: 100%;
+                min-height: 420px;
                 z-index: 1;
             }
         </style>
@@ -26,62 +27,77 @@
                     <form action="{{ route('land-plot.store') }}" method="POST">
                         @csrf
                         <input type="hidden" name="polygon" id="polygon" value="{{ old('polygon') }}">
+                        <input type="hidden" name="latitude" id="latitude" value="{{ old('latitude') }}">
+                        <input type="hidden" name="longitude" id="longitude" value="{{ old('longitude') }}">
 
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-
-                            <div class="w-full">
-                                <x-input-label for="plot_code">{{ __('Kode Lahan') }}</x-input-label>
-                                <x-text-input id="plot_code" class="block mt-1 w-full rounded-xl" type="text"
-                                    name="plot_code" :value="old('plot_code')" required autofocus placeholder="Contoh: LHN-001" />
-                                <x-input-error :messages="$errors->get('plot_code')" class="mt-2" />
-                            </div>
-
-                            <div class="w-full">
-                                <x-input-label for="plot_name">{{ __('Nama Lahan') }}</x-input-label>
-                                <x-text-input id="plot_name" class="block mt-1 w-full rounded-xl" type="text"
-                                    name="plot_name" :value="old('plot_name')" required placeholder="Contoh: Lahan Singkong" />
-                                <x-input-error :messages="$errors->get('plot_name')" class="mt-2" />
-                            </div>
-
-                            <div class="w-full md:col-span-2 mt-4">
+                        <div class="flex flex-col lg:flex-row gap-6">
+                            
+                            <div class="lg:w-1/2 w-full flex flex-col">
                                 <x-input-label>{{ __('Gambar Area Lahan di Peta') }}</x-input-label>
-                                <div id="map" class="mt-2 rounded-xl border border-gray-300"></div>
-                                <p class="text-xs text-red-500 mt-1">*Gunakan alat pada sebelah kiri peta untuk menggambar area lahan.</p>
+                                <div id="map" class="mt-2 rounded-xl border border-gray-300 flex-1 min-h-[420px]"></div>
+                                <p class="text-xs text-red-500 mt-2">*Gunakan alat pada sebelah kiri peta untuk menggambar area lahan.</p>
                                 <x-input-error :messages="$errors->get('polygon')" class="mt-2" />
                             </div>
 
-                            <div class="w-full">
-                                <x-input-label for="latitude">{{ __('Latitude') }}</x-input-label>
-                                <x-text-input id="latitude" class="block mt-1 w-full rounded-xl bg-gray-100" type="number" step="any"
-                                    name="latitude" :value="old('latitude')" readonly required />
-                                <x-input-error :messages="$errors->get('latitude')" class="mt-2" />
-                            </div>
+                            <div class="lg:w-1/2 w-full flex flex-col gap-4">
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <x-input-label for="plot_name">{{ __('Nama Lahan') }}</x-input-label>
+                                        <x-text-input id="plot_name" class="block mt-1 w-full rounded-xl" type="text"
+                                            name="plot_name" :value="old('plot_name')" required placeholder="Lahan Singkong" />
+                                        <x-input-error :messages="$errors->get('plot_name')" class="mt-2" />
+                                    </div>
+                                    <div>
+                                        <x-input-label for="plot_code">{{ __('Kode Lahan') }}</x-input-label>
+                                        <x-text-input id="plot_code" class="block mt-1 w-full rounded-xl" type="text"
+                                            name="plot_code" :value="old('plot_code')" required placeholder="LHN-001" />
+                                        <x-input-error :messages="$errors->get('plot_code')" class="mt-2" />
+                                    </div>
+                                </div>
 
-                            <div class="w-full">
-                                <x-input-label for="longitude">{{ __('Longitude') }}</x-input-label>
-                                <x-text-input id="longitude" class="block mt-1 w-full rounded-xl bg-gray-100" type="number" step="any"
-                                    name="longitude" :value="old('longitude')" readonly required />
-                                <x-input-error :messages="$errors->get('longitude')" class="mt-2" />
-                            </div>
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <x-input-label for="area_hectare">{{ __('Luas (Ha)') }}</x-input-label>
+                                        <x-text-input id="area_hectare" class="block mt-1 w-full rounded-xl bg-gray-100" type="number" step="0.01"
+                                            name="area_hectare" :value="old('area_hectare')" readonly required />
+                                        <x-input-error :messages="$errors->get('area_hectare')" class="mt-2" />
+                                    </div>
+                                    <div>
+                                        <x-input-label for="soil_type">{{ __('Jenis Tanah') }}</x-input-label>
+                                        <x-text-input id="soil_type" class="block mt-1 w-full rounded-xl" type="text"
+                                            name="soil_type" :value="old('soil_type')" placeholder="Lempung" />
+                                        <x-input-error :messages="$errors->get('soil_type')" class="mt-2" />
+                                    </div>
+                                </div>
 
-                            <div class="w-full">
-                                <x-input-label for="area_hectare">{{ __('Luas Area / Hektar') }}</x-input-label>
-                                <x-text-input id="area_hectare" class="block mt-1 w-full rounded-xl bg-gray-100" type="number" step="0.01"
-                                    name="area_hectare" :value="old('area_hectare')" readonly required />
-                                <x-input-error :messages="$errors->get('area_hectare')" class="mt-2" />
-                            </div>
+                                <div>
+                                    <x-input-label for="owner_name">{{ __('Nama Pemilik') }}</x-input-label>
+                                    <x-text-input id="owner_name" class="block mt-1 w-full rounded-xl" type="text"
+                                        name="owner_name" :value="old('owner_name')" placeholder="Nama pemilik lahan" />
+                                    <x-input-error :messages="$errors->get('owner_name')" class="mt-2" />
+                                </div>
 
-                            <div class="w-full">
-                                <x-input-label for="soil_type">{{ __('Jenis Tanah (Opsional)') }}</x-input-label>
-                                <x-text-input id="soil_type" class="block mt-1 w-full rounded-xl" type="text"
-                                    name="soil_type" :value="old('soil_type')" placeholder="Contoh: Lempung berpasir" />
-                                <x-input-error :messages="$errors->get('soil_type')" class="mt-2" />
-                            </div>
-                        </div>
+                                <div>
+                                    <x-input-label for="address">{{ __('Alamat Lahan') }}</x-input-label>
+                                    <textarea id="address" name="address"
+                                        class="block mt-1 w-full border-gray-300 rounded-xl focus:border-indigo-500 focus:ring-indigo-500 text-sm"
+                                        rows="3" placeholder="Ketik alamat lalu klik di luar, peta akan otomatis bergeser...">{{ old('address') }}</textarea>
+                                    <x-input-error :messages="$errors->get('address')" class="mt-2" />
+                                </div>
 
-                        <div class="mt-6 flex justify-end gap-2">
-                            <a href="{{ route('land-plot.index') }}" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-xl">Batal</a>
-                            <x-primary-button>{{ __('Simpan Lahan') }}</x-primary-button>
+                                <div>
+                                    <x-input-label for="plant_types">{{ __('Data Tanaman (Pisahkan dgn koma)') }}</x-input-label>
+                                    <textarea id="plant_types" name="plant_types"
+                                        class="block mt-1 w-full border-gray-300 rounded-xl focus:border-indigo-500 focus:ring-indigo-500 text-sm"
+                                        rows="2" placeholder="Contoh: Singkong, Jagung">{{ old('plant_types') }}</textarea>
+                                    <x-input-error :messages="$errors->get('plant_types')" class="mt-2" />
+                                </div>
+
+                                <div class="mt-4 flex justify-end gap-2">
+                                    <a href="{{ route('land-plot.index') }}" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-xl">Batal</a>
+                                    <x-primary-button>{{ __('Simpan Lahan') }}</x-primary-button>
+                                </div>
+                            </div>
                         </div>
                     </form>
                 </div>
@@ -97,15 +113,7 @@
                 const areaInput = document.getElementById('area_hectare');
                 const polygonInput = document.getElementById('polygon');
 
-                const standardIcon = new L.Icon({
-                    iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png',
-                    shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
-                    iconSize: [25, 41],
-                    iconAnchor: [12, 41]
-                });
-
-
-                const map = L.map('map').setView([-0.7893, 113.9213], 5);
+                const map = L.map('map').setView([-6.9175, 107.6191], 13);
 
                 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                     maxZoom: 19,
@@ -128,15 +136,14 @@
                     },
                     draw: {
                         polygon: {
-                            allowIntersection: false,
+                            allowIntersection: true,
                             showArea: true,
-                            icon:standardIcon,
                             shapeOptions: {
                                 color: '#0f8dedff',
                             }
                         },
                         polyline: false,
-                        rectangle: false,
+                        rectangle: true,
                         circle: false,
                         marker: false,
                         circlemarker: false
@@ -169,6 +176,20 @@
                     lngInput.value = '';
                     areaInput.value = '';
                     polygonInput.value = '';
+                });
+
+                document.getElementById('address').addEventListener('blur', function() {
+                    const query = this.value;
+                    if (query.length > 5) {
+                        fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&countrycodes=id&limit=1`)
+                            .then(res => res.json())
+                            .then(data => {
+                                if (data.length > 0) {
+                                    map.flyTo([data[0].lat, data[0].lon], 15);
+                                }
+                            })
+                            .catch(err => console.error('Geocoding error:', err));
+                    }
                 });
             });
         </script>

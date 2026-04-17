@@ -4,8 +4,7 @@
         id="sidebar">
         <div id="app-brand" class="w-full h-16 mt-3 px-8">
             <a href="#" class="flex items-center" id="app-logo">
-                <img src="{{ asset('images\logo-unikom-unggul.webp') }}" alt="UNIKOM" srcset=""
-                    class="object-cover">
+                <img src="{{ asset('images\logo-unikom-unggul.webp') }}" alt="UNIKOM" srcset="" class="object-cover">
             </a>
         </div>
         <div class="flex-grow">
@@ -35,7 +34,8 @@
                                     'master-data.*',
                                     'lecturer.*',
                                     'student.*',
-                                    'device.*'),
+                                    'device.*'
+                                ),
                                 'fa-solid',
                                 'fa-database',
                             ])></i>
@@ -43,6 +43,7 @@
                         </a>
                     </li>
                 @endif
+                <!--Manajemeen Langganan -->
                 <!-- @if (Auth::user()->role == 'superuser')
                     <li class="menu-item">
                         <a href="{{ route('subscription.index') }}" class="menu-link">
