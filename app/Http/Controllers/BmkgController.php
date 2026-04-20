@@ -52,7 +52,7 @@ class BmkgController extends Controller
                     BmkgReading::create([
                         'station_id' => isset($weather['id']) ? (string)$weather['id'] : null,
                         'station_name' => $weather['name'] ?? 'Unknown Station',
-                        'area_name' => $plot->name ?? 'Unknown Area', // Referensi nama plot
+                        'area_name' => $plot->plot_name ?? 'Unknown Area', // Referensi nama plot
                         'timestamp_bmkg' => isset($weather['dt']) ? Carbon::createFromTimestamp($weather['dt'])->toDateTimeString() : Carbon::now()->toDateTimeString(),
                         'air_temperature_c' => $weather['main']['temp'] ?? 0,
                         'air_humidity_percent' => $weather['main']['humidity'] ?? 0,

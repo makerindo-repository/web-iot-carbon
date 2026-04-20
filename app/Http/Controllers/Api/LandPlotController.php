@@ -16,7 +16,7 @@ class LandPlotController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate([
-            'plot_code' => 'required|string',
+            'plot_code' => 'nullable|string',
             'plot_name' => 'required|string',
             'owner_name' => 'nullable|string',
             'address' => 'nullable|string',
@@ -27,6 +27,11 @@ class LandPlotController extends Controller
             'plant_types' => 'nullable|string',
             'polygon' => 'nullable'
         ]);
+
+        if (empty($data['plot_code'])) {
+            $lastId = LandPlot::max('id') ?? 0;
+            $data['plot_code'] = 'L-' . str_pad($lastId + 1, 3, '0', STR_PAD_LEFT);
+        }
 
         $landPlot = LandPlot::create($data);
         activity()->performedOn($landPlot)->log("Menambah Lahan baru: {$landPlot->plot_name}");

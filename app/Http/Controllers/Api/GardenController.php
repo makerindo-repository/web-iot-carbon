@@ -17,7 +17,7 @@ class GardenController extends Controller
     {
         $data = $request->validate([
             'land_plot_id' => 'required|exists:land_plots,id',
-            'garden_code' => 'required|string',
+            'garden_code' => 'nullable|string',
             'garden_name' => 'required|string',
             'latitude' => 'nullable|numeric',
             'longitude' => 'nullable|numeric',
@@ -26,6 +26,11 @@ class GardenController extends Controller
             'plant_types' => 'nullable|string',
             'polygon' => 'nullable'
         ]);
+
+        if (empty($data['garden_code'])) {
+            $lastId = Garden::max('id') ?? 0;
+            $data['garden_code'] = 'G-' . str_pad($lastId + 1, 3, '0', STR_PAD_LEFT);
+        }
 
         $garden = Garden::create($data);
         activity()->performedOn($garden)->log("Menambah Kebun/Blok baru: {$garden->garden_name}");
