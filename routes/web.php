@@ -6,6 +6,6 @@ Route::get('/', function () {
     return response()->json([
         'status' => 'success',
         'message' => 'AgriSense API Server is Running',
-        'version' => 'V1.0'
+        'version' => 'V1.0',
     ]);
 });

@@ -4,8 +4,8 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\IotReading;
-use Illuminate\Http\Request;
 use Carbon\Carbon;
+use Illuminate\Http\Request;
 
 class ReportController extends Controller
 {
@@ -20,10 +20,10 @@ class ReportController extends Controller
         $query = IotReading::with('device')->orderBy('reading_time', 'desc');
 
         if ($request->has('start_date') && $request->has('end_date')) {
-            $query->whereBetween('reading_time', [$request->start_date, $request->end_date . ' 23:59:59']);
+            $query->whereBetween('reading_time', [$request->start_date, $request->end_date.' 23:59:59']);
         }
         if ($request->has('device_id')) {
-            $query->whereHas('device', fn($q) => $q->where('device_code', $request->device_id));
+            $query->whereHas('device', fn ($q) => $q->where('device_code', $request->device_id));
         }
 
         $data = $query->limit(1000)->get();
@@ -35,18 +35,18 @@ class ReportController extends Controller
         // Default: return JSON data for frontend to handle Excel/PDF
         return response()->json([
             'status' => 'success',
-            'count'  => $data->count(),
-            'data'   => $data->map(fn($r) => [
-                'device_id'     => $r->device->device_code ?? '',
-                'timestamp'     => Carbon::parse($r->reading_time)->format('Y-m-d H:i:s'),
-                'co2_ppm'       => $r->co2_sensor,
-                'temperature'   => $r->air_temperature_sensor,
-                'humidity'      => $r->air_humidity_sensor,
+            'count' => $data->count(),
+            'data' => $data->map(fn ($r) => [
+                'device_id' => $r->device->device_code ?? '',
+                'timestamp' => Carbon::parse($r->reading_time)->format('Y-m-d H:i:s'),
+                'co2_ppm' => $r->co2_sensor,
+                'temperature' => $r->air_temperature_sensor,
+                'humidity' => $r->air_humidity_sensor,
                 'soil_moisture' => $r->soil_moisture,
-                'soil_ph'       => $r->soil_ph,
-                'soil_n'        => $r->soil_n_mg_kg,
-                'soil_p'        => $r->soil_p_mg_kg,
-                'soil_k'        => $r->soil_k_mg_kg,
+                'soil_ph' => $r->soil_ph,
+                'soil_n' => $r->soil_n_mg_kg,
+                'soil_p' => $r->soil_p_mg_kg,
+                'soil_k' => $r->soil_k_mg_kg,
             ]),
         ]);
     }
@@ -55,7 +55,7 @@ class ReportController extends Controller
     {
         $headers = [
             'Content-Type' => 'text/csv',
-            'Content-Disposition' => 'attachment; filename="agrisense_report_' . now()->format('Ymd_His') . '.csv"',
+            'Content-Disposition' => 'attachment; filename="agrisense_report_'.now()->format('Ymd_His').'.csv"',
         ];
 
         $callback = function () use ($data) {

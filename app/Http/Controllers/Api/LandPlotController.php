@@ -25,23 +25,24 @@ class LandPlotController extends Controller
             'area_hectare' => 'nullable|numeric',
             'soil_type' => 'nullable|string',
             'plant_types' => 'nullable|string',
-            'polygon' => 'nullable'
+            'polygon' => 'nullable',
         ]);
 
         if (empty($data['plot_code'])) {
             $lastId = LandPlot::max('id') ?? 0;
-            $data['plot_code'] = 'L-' . str_pad($lastId + 1, 3, '0', STR_PAD_LEFT);
+            $data['plot_code'] = 'L-'.str_pad($lastId + 1, 3, '0', STR_PAD_LEFT);
         }
 
         $landPlot = LandPlot::create($data);
         activity()->performedOn($landPlot)->log("Menambah Lahan baru: {$landPlot->plot_name}");
+
         return response()->json($landPlot, 201);
     }
 
     public function update(Request $request, $id)
     {
         $landPlot = LandPlot::findOrFail($id);
-        
+
         $data = $request->validate([
             'plot_code' => 'sometimes|string',
             'plot_name' => 'sometimes|string',
@@ -52,10 +53,11 @@ class LandPlotController extends Controller
             'area_hectare' => 'nullable|numeric',
             'soil_type' => 'nullable|string',
             'plant_types' => 'nullable|string',
-            'polygon' => 'nullable'
+            'polygon' => 'nullable',
         ]);
 
         $landPlot->update($data);
+
         return response()->json($landPlot);
     }
 
@@ -63,6 +65,7 @@ class LandPlotController extends Controller
     {
         $landPlot = LandPlot::findOrFail($id);
         $landPlot->delete();
+
         return response()->json(['message' => 'Land Plot deleted']);
     }
 }

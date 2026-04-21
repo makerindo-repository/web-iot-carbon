@@ -8,4 +8,3 @@ class AgrisenseSetting extends Model
 {
     protected $fillable = ['key', 'value'];
 }
-

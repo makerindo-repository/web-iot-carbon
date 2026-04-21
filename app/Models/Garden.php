@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class Garden extends Model
 {
     use HasFactory;
+
     protected $fillable = [
         'land_plot_id',
         'garden_code',
@@ -17,8 +18,9 @@ class Garden extends Model
         'polygon',
         'area_hectare',
         'soil_type',
-        'plant_types'
+        'plant_types',
     ];
+
     protected $casts = [
         'polygon' => 'json',
     ];

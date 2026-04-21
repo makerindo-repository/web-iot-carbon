@@ -3,10 +3,10 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\User;
 use App\Models\AgrisenseSetting;
-use Spatie\Activitylog\Models\Activity;
+use App\Models\User;
 use Illuminate\Http\Request;
+use Spatie\Activitylog\Models\Activity;
 
 class SystemController extends Controller
 {
@@ -19,13 +19,13 @@ class SystemController extends Controller
 
         return response()->json($logs->map(function ($l) {
             return [
-                'id'        => 'LOG-' . str_pad($l->id, 3, '0', STR_PAD_LEFT),
-                'user'      => $l->causer->name ?? 'System',
-                'action'    => $l->description,
-                'module'    => $l->log_name ?? 'System',
+                'id' => 'LOG-'.str_pad($l->id, 3, '0', STR_PAD_LEFT),
+                'user' => $l->causer->name ?? 'System',
+                'action' => $l->description,
+                'module' => $l->log_name ?? 'System',
                 'timestamp' => $l->created_at->toIso8601String(),
-                'status'    => 'success',
-                'ip'        => '127.0.0.1',
+                'status' => 'success',
+                'ip' => '127.0.0.1',
             ];
         }));
     }
@@ -34,7 +34,7 @@ class SystemController extends Controller
     {
         $validated = $request->validate([
             'action' => 'required|string',
-            'module' => 'sometimes|string'
+            'module' => 'sometimes|string',
         ]);
 
         activity()->log($validated['action']);
@@ -49,12 +49,12 @@ class SystemController extends Controller
     {
         return response()->json(User::all()->map(function ($u) {
             return [
-                'id'        => 'USR-' . str_pad($u->id, 3, '0', STR_PAD_LEFT),
-                'real_id'   => $u->id,
-                'name'      => $u->name,
-                'email'     => $u->email,
-                'role'      => $u->role ?? 'operator',
-                'status'    => 'active',
+                'id' => 'USR-'.str_pad($u->id, 3, '0', STR_PAD_LEFT),
+                'real_id' => $u->id,
+                'name' => $u->name,
+                'email' => $u->email,
+                'role' => $u->role ?? 'operator',
+                'status' => 'active',
                 'lastLogin' => $u->updated_at->toIso8601String(),
             ];
         }));
@@ -66,16 +66,16 @@ class SystemController extends Controller
     public function createUser(Request $request)
     {
         $validated = $request->validate([
-            'name'  => 'required|string',
+            'name' => 'required|string',
             'email' => 'required|email|unique:users',
-            'role'  => 'required|in:admin,supervisor,operator',
+            'role' => 'required|in:admin,supervisor,operator',
         ]);
 
         $user = User::create([
-            'name'     => $validated['name'],
-            'email'    => $validated['email'],
+            'name' => $validated['name'],
+            'email' => $validated['email'],
             'password' => bcrypt('password123'), // default password
-            'role'     => $validated['role'],
+            'role' => $validated['role'],
         ]);
 
         return response()->json(['status' => 'success', 'user' => $user]);
@@ -88,12 +88,13 @@ class SystemController extends Controller
     {
         $user = User::findOrFail($id);
         $validated = $request->validate([
-            'name'  => 'sometimes|string',
+            'name' => 'sometimes|string',
             'email' => 'sometimes|email|unique:users,email,'.$id,
-            'role'  => 'sometimes|in:admin,supervisor,operator',
+            'role' => 'sometimes|in:admin,supervisor,operator',
         ]);
 
         $user->update($validated);
+
         return response()->json(['status' => 'success', 'user' => $user]);
     }
 
@@ -104,6 +105,7 @@ class SystemController extends Controller
     {
         $user = User::findOrFail($id);
         $user->delete();
+
         return response()->json(['status' => 'success']);
     }
 
@@ -116,15 +118,15 @@ class SystemController extends Controller
 
         // Default values if empty
         $defaults = [
-            'appName'          => 'AgriSense V1.0',
-            'co2Threshold'     => '1000',
-            'tempMax'          => '35',
-            'humidityMin'      => '40',
+            'appName' => 'AgriSense V1.0',
+            'co2Threshold' => '1000',
+            'tempMax' => '35',
+            'humidityMin' => '40',
             'samplingInterval' => '60',
-            'mqttUrl'          => 'mqtt://broker.agrisense.id:1883',
-            'aiEngineKey'      => 'sk-agrisense-ai-engine-key-2026',
-            'emailAlert'       => '1',
-            'telegramBot'      => '0',
+            'mqttUrl' => 'mqtt://broker.agrisense.id:1883',
+            'aiEngineKey' => 'sk-agrisense-ai-engine-key-2026',
+            'emailAlert' => '1',
+            'telegramBot' => '0',
         ];
 
         return response()->json(array_merge($defaults, $settings));
@@ -143,7 +145,7 @@ class SystemController extends Controller
             }
             AgrisenseSetting::updateOrCreate(
                 ['key' => $key],
-                ['value' => (string)$value]
+                ['value' => (string) $value]
             );
         }
 

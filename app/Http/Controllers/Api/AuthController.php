@@ -16,14 +16,14 @@ class AuthController extends Controller
     public function login(Request $request)
     {
         $request->validate([
-            'email'    => 'required|email',
+            'email' => 'required|email',
             'password' => 'required',
         ]);
 
         $user = User::where('email', $request->email)->first();
 
         // Cek apakah user ada dan password cocok
-        if (!$user || !Hash::check($request->password, $user->password)) {
+        if (! $user || ! Hash::check($request->password, $user->password)) {
             throw ValidationException::withMessages([
                 'email' => ['Kredensial yang Anda berikan salah.'],
             ]);
@@ -33,15 +33,15 @@ class AuthController extends Controller
         $token = $user->createToken('agrisense-token')->plainTextToken;
 
         return response()->json([
-            'status'  => 'success',
+            'status' => 'success',
             'message' => 'Login berhasil',
-            'token'   => $token,
-            'user'    => [
-                'id'    => $user->id,
-                'name'  => $user->name,
+            'token' => $token,
+            'user' => [
+                'id' => $user->id,
+                'name' => $user->name,
                 'email' => $user->email,
-                'role'  => $user->role,
-            ]
+                'role' => $user->role,
+            ],
         ]);
     }
 
@@ -53,8 +53,8 @@ class AuthController extends Controller
         $request->user()->currentAccessToken()->delete();
 
         return response()->json([
-            'status'  => 'success',
-            'message' => 'Logged out successfully'
+            'status' => 'success',
+            'message' => 'Logged out successfully',
         ]);
     }
 }

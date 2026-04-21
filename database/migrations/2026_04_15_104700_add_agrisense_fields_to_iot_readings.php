@@ -43,7 +43,7 @@ return new class extends Migration
                 'air_pressure_hpa', 'light_lux', 'soil_ec_ms_cm',
                 'soil_n_mg_kg', 'soil_p_mg_kg', 'soil_k_mg_kg',
                 'battery_voltage', 'battery_percent', 'network_type',
-                'message_id', 'node_status', 'sensor_status', 'firmware_version'
+                'message_id', 'node_status', 'sensor_status', 'firmware_version',
             ]);
         });
     }

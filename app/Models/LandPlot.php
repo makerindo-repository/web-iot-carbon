@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class LandPlot extends Model
 {
     use HasFactory;
+
     protected $fillable = [
         'plot_code',
         'plot_name',
@@ -18,18 +19,20 @@ class LandPlot extends Model
         'area_hectare',
         'soil_type',
         'plant_types',
-        'polygon'
+        'polygon',
     ];
 
     // prote
     protected $casts = [
         'polygon' => 'json',
     ];
+
     // Relasi Data Garden
     public function gardens()
     {
         return $this->hasMany(Garden::class, 'land_plot_id');
     }
+
     // Relasi Data BMKG
     public function bmkgReadings()
     {
@@ -40,5 +43,4 @@ class LandPlot extends Model
     {
         return $this->hasMany(IotReading::class, 'plot_id');
     }
-
 }

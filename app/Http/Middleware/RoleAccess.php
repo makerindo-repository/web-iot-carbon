@@ -12,14 +12,15 @@ class RoleAccess
     /**
      * Handle an incoming request.
      *
-     * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
+     * @param  Closure(Request): (Response)  $next
      */
     public function handle(Request $request, Closure $next, ...$roles): Response
     {
         $user = Auth::user();
-        if(!$user || !in_array($user->role, $roles)) {
+        if (! $user || ! in_array($user->role, $roles)) {
             abort(403, 'Anda tidak memiliki akses ke halaman ini!');
         }
+
         return $next($request);
     }
 }

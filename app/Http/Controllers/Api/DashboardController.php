@@ -3,10 +3,9 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\CciAnalytic;
 use App\Models\Device;
 use App\Models\IotReading;
-use App\Models\CciAnalytic;
-use Illuminate\Http\Request;
 
 class DashboardController extends Controller
 {
@@ -21,13 +20,13 @@ class DashboardController extends Controller
 
         return response()->json([
             'nodes' => [
-                'total'   => $devices->count(),
-                'online'  => $devices->where('device_status', 'online')->count(),
+                'total' => $devices->count(),
+                'online' => $devices->where('device_status', 'online')->count(),
                 'warning' => $devices->where('device_status', 'warning')->count(),
                 'offline' => $devices->where('device_status', 'offline')->count(),
             ],
             'latest_reading' => $latestReading,
-            'latest_cci'     => $latestCci ? (float)$latestCci->cci_value : 0,
+            'latest_cci' => $latestCci ? (float) $latestCci->cci_value : 0,
         ]);
     }
 }

@@ -19,12 +19,12 @@ class ImageService
     public static function image_intervention($image, $path, $ratio = false): string
     {
         $clientExtension = ($image->extension() == null && $image->hashName() == '') ? 'png' : $image->extension();
-        $name = strtoupper(Str::random(5)) . '-' . time() . '.' . $clientExtension;
+        $name = strtoupper(Str::random(5)).'-'.time().'.'.$clientExtension;
 
         $imageResize = Image::read($image->getPathName());
 
         if ($ratio != false) {
-           $originalWidth = $imageResize->width();
+            $originalWidth = $imageResize->width();
             $originalHeight = $imageResize->height();
 
             if ($originalWidth / $originalHeight > $ratio) {
@@ -43,20 +43,23 @@ class ImageService
             $imageResize = $imageResize->crop($width, $height, $x, $y);
         }
 
-        if (!File::exists(public_path($path))) {
+        if (! File::exists(public_path($path))) {
             File::makeDirectory(public_path($path), 0755, true, true);
         }
 
         // $final_path = public_path($path . $name);
-        $imageResize->save(public_path($path . $name));
+        $imageResize->save(public_path($path.$name));
 
-        return $path . $name;
+        return $path.$name;
     }
 
-    public static function deleteImage(?string $path) : bool {
-        if(!$path) return false;
+    public static function deleteImage(?string $path): bool
+    {
+        if (! $path) {
+            return false;
+        }
 
-        if (!File::exists(public_path($path))) {
+        if (! File::exists(public_path($path))) {
             return false;
         }
 
