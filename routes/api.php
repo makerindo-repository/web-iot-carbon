@@ -12,7 +12,7 @@ use App\Http\Controllers\Api\SystemController;
 use App\Http\Controllers\BmkgController;
 
 // Auth Routes
-Route::post('/login', [AuthController::class, 'login']);
+Route::post('/login', [AuthController::class, 'login'])->name('login');
 
 // ═══════════════════════════════════════════════════════════════
 //  AgriSense V1.0 REST API —
