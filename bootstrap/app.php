@@ -12,10 +12,14 @@ $app = Application::configure(basePath: dirname(__DIR__))
         commands: __DIR__.'/../routes/console.php',
         health: '/up',
     )
-    ->withMiddleware(function (Middleware $middleware): void {
+    ->withMiddleware(function (Middleware $middleware) {
         $middleware->alias([
             'role' => RoleAccess::class,
         ]);
+
+        // Mencegah redirect ke halaman login (yang menyebabkan error 500)
+        // Pastikan response selalu JSON 401 jika unauthenticated
+        $middleware->redirectGuestsTo(fn () => null);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

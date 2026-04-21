@@ -16,11 +16,31 @@ class DatabaseSeeder extends Seeder
     {
         // User::factory(10)->create();
 
-        User::factory()->create([
-            'name' => 'Super User',
-            'email' => 'superuser@gmail.com',
-            'password' => Hash::make('superuser'),
-            'role' => 'superuser',
-        ]);
+        User::updateOrCreate(
+            ['email' => 'superuser@gmail.com'],
+            [
+                'name' => 'Super User',
+                'password' => Hash::make('superuser'),
+                'role' => 'superuser',
+            ]
+        );
+
+        User::updateOrCreate(
+            ['email' => 'dosen@agrisense.id'],
+            [
+                'name' => 'Dosen Peneliti',
+                'password' => Hash::make('password123'),
+                'role' => 'dosen',
+            ]
+        );
+
+        User::updateOrCreate(
+            ['email' => 'mahasiswa@agrisense.id'],
+            [
+                'name' => 'Mahasiswa Magang',
+                'password' => Hash::make('password123'),
+                'role' => 'mahasiswa',
+            ]
+        );
     }
 }

@@ -23,8 +23,8 @@ WORKDIR /var/www/html
 # Copy composer files terlebih dahulu (optimasi cache layer)
 COPY composer.json composer.lock ./
 
-# Install dependencies (deterministic build — BUKAN update)
-RUN composer install --no-dev --optimize-autoloader --no-scripts --no-interaction
+# Install dependencies (update untuk sinkronisasi lock file dengan composer.json)
+RUN composer update --no-dev --optimize-autoloader --no-scripts --no-interaction
 
 # Copy seluruh kode backend
 COPY . .
