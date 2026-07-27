@@ -14,14 +14,20 @@ class ReportController extends Controller
     // ═══════════════════════════════════════════════════════════
     public function exportReport(Request $request)
     {
+        $request->validate([
+            'start_date' => 'required|date',
+            'end_date' => 'required|date|after_or_equal:start_date',
+        ], [
+            'start_date.required' => 'Periode waktu (tanggal mulai) wajib diisi untuk export data.',
+            'end_date.required' => 'Periode waktu (tanggal akhir) wajib diisi untuk export data.',
+        ]);
+
         $format = $request->get('format', 'csv');
         $type = $request->get('type', 'readings');
 
         $query = IotReading::with('device')->orderBy('reading_time', 'desc');
 
-        if ($request->has('start_date') && $request->has('end_date')) {
-            $query->whereBetween('reading_time', [$request->start_date, $request->end_date.' 23:59:59']);
-        }
+        $query->whereBetween('reading_time', [$request->start_date, $request->end_date.' 23:59:59']);
         if ($request->has('device_id')) {
             $query->whereHas('device', fn ($q) => $q->where('device_code', $request->device_id));
         }
