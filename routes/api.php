@@ -1,11 +1,14 @@
 <?php
 
+use App\Http\Controllers\Api\AiInsightController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CciController;
 use App\Http\Controllers\Api\DashboardController;
+use App\Http\Controllers\Api\ForecastController;
 use App\Http\Controllers\Api\GardenController;
 use App\Http\Controllers\Api\IotReadingController;
 use App\Http\Controllers\Api\LandPlotController;
+use App\Http\Controllers\Api\ModelPerformanceController;
 use App\Http\Controllers\Api\NodeController;
 use App\Http\Controllers\Api\ReportController;
 use App\Http\Controllers\Api\SystemController;
@@ -57,4 +60,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/cci', [CciController::class, 'getCci']);
     Route::get('/logs', [SystemController::class, 'getLogs']);
     Route::post('/logs/record', [SystemController::class, 'recordLog']);
+
+    // Analitik Prediktif & Kecerdasan Buatan (AI)
+    Route::get('/model-performance', [ModelPerformanceController::class, 'index']);
+    Route::get('/model-performance/node/{id}', [ModelPerformanceController::class, 'forNode']);
+    Route::get('/forecasts', [ForecastController::class, 'index']);
+    Route::post('/ai-insight/generate', [AiInsightController::class, 'generate']);
+    Route::get('/ai-insight/history', [AiInsightController::class, 'history']);
 });
