@@ -68,7 +68,7 @@ class SystemController extends Controller
         $validated = $request->validate([
             'name' => 'required|string',
             'email' => 'required|email|unique:users',
-            'role' => 'required|in:superuser,dosen,mahasiswa',
+            'role' => 'required|in:admin,operator,viewer',
         ]);
 
         $user = User::create([
@@ -90,7 +90,7 @@ class SystemController extends Controller
         $validated = $request->validate([
             'name' => 'sometimes|string',
             'email' => 'sometimes|email|unique:users,email,'.$id,
-            'role' => 'sometimes|in:superuser,dosen,mahasiswa',
+            'role' => 'sometimes|in:admin,operator,viewer',
         ]);
 
         $user->update($validated);

@@ -31,8 +31,8 @@ Route::get('/internal/bmkg/sync', [BmkgController::class, 'sync']);
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
 
-    // Superuser Only (Account & System Management)
-    Route::middleware('role:superuser')->group(function () {
+    // Admin Only (Account & System Management)
+    Route::middleware('role:admin')->group(function () {
         Route::get('/users', [SystemController::class, 'getUsers']);
         Route::post('/users', [SystemController::class, 'createUser']);
         Route::put('/users/{id}', [SystemController::class, 'updateUser']);
@@ -41,8 +41,8 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/settings', [SystemController::class, 'updateSettings']);
     });
 
-    // Superuser & Dosen (Operational & IoT Management - Write/Modify Access)
-    Route::middleware('role:superuser,dosen')->group(function () {
+    // Admin & Operator (Operational & IoT Management - Write/Modify Access)
+    Route::middleware('role:admin,operator')->group(function () {
         Route::post('/nodes', [NodeController::class, 'store']);
         Route::put('/nodes/{id}', [NodeController::class, 'update']);
         Route::delete('/nodes/{id}', [NodeController::class, 'destroy']);
@@ -51,7 +51,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/reports/export', [ReportController::class, 'exportReport']);
     });
 
-    // 🔓 Mahasiswa, Dosen, & Superuser (Tampilan Monitoring Umum - Read Only Access)
+    // 🔓 Viewer, Operator, & Admin (Tampilan Monitoring Umum - Read Only Access)
     Route::get('/nodes', [NodeController::class, 'index']);
     Route::get('/nodes/{id}', [NodeController::class, 'show']);
     Route::get('/dashboard/summary', [DashboardController::class, 'getDashboardSummary']);
