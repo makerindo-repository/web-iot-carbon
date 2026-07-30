@@ -14,3 +14,8 @@ Schedule::call(function () {
     $controller = new BmkgController;
     $controller->sync();
 })->hourly()->timezone('Asia/Jakarta');
+
+// Scheduler: Menjadwalkan pembuatan prediksi forecasting (SVM/XGBoost/LSTM)
+// untuk setiap node ke queue "ai-forecast" (lihat docker-compose.yml, service
+// "queue"). Dijalankan setiap jam mengikuti pembacaan sensor node terbaru.
+Schedule::command('agrisense:forecast:generate')->hourly()->timezone('Asia/Jakarta');
