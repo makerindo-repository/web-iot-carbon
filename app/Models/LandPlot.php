@@ -17,9 +17,13 @@ class LandPlot extends Model
         'latitude',
         'longitude',
         'area_hectare',
-        'soil_type',
+        'soc_baseline_gc_m2',
+        'c_max_gc_m2',
+        'soc_source',
         'plant_types',
         'polygon',
+        'color',
+        'keterangan',
     ];
 
     // prote

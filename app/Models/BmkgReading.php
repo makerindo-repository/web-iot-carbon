@@ -15,7 +15,4 @@ class BmkgReading extends Model
     {
         return $this->belongsTo(LandPlot::class, 'plot_id');
     }
-
-    // Hubungan spesifik jika station_id atau area dikonfirmasi ke model lain
-    // bisa ditambahkan kelak
 }

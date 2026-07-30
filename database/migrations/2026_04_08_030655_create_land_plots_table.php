@@ -21,7 +21,7 @@ return new class extends Migration
             $table->decimal('longitude', 10, 7);
             $table->json('polygon')->nullable();
             $table->decimal('area_hectare', 8, 2);
-            $table->string('soil_type')->nullable();
+
             $table->text('plant_types')->nullable();
             $table->timestamps();
         });

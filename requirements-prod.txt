@@ -1,17 +1,15 @@
-# Python runtime dependencies for the AgriSense AI Forecast pipeline
-# (docs/deploy_model_bundle/run_sintetik90_inference.py), installed into the
-# /opt/ai_env virtualenv built by backend/Dockerfile.
-#
-# NOTE: this file did not exist prior to 2026-07-30 even though the Dockerfile
-# already referenced it (COPY backend/requirements-prod.txt ...) — the image
-# build was broken at that layer. Versions below are a best-effort match for
-# the sintetik_90 model bundle (trained on Kaggle, TensorFlow/Keras 3 `.keras`
-# format); validate against the exact Kaggle training environment before
-# relying on them for bit-exact reproducibility.
+# AgriSense Production Requirements
+# Minimal dependencies untuk production deployment
+# PyTorch dan CUDA tidak termasuk (hanya untuk local training)
 
-numpy>=1.26,<2.0
-pandas>=2.1,<2.3
-joblib>=1.3,<2.0
-scikit-learn>=1.4,<1.6
-xgboost>=2.0,<2.2
-tensorflow-cpu>=2.15,<2.18
+# Data Processing
+pandas==3.0.2
+numpy==2.4.4
+
+# Machine Learning
+scikit-learn==1.8.0
+xgboost==3.2.0
+joblib==1.5.3
+
+# Utilities
+python-dateutil>=2.8.2

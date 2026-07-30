@@ -14,6 +14,12 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
+        if (app()->environment('production') && ! env('ALLOW_DEMO_USERS', false)) {
+            $this->command?->warn('Demo users were not seeded in production. Set ALLOW_DEMO_USERS=true only for temporary staging data.');
+
+            return;
+        }
+
         // User::factory(10)->create();
 
         User::updateOrCreate(

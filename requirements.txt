@@ -1,0 +1,5 @@
+# AgriSense Default Requirements
+# Production-ready dependencies (tanpa PyTorch)
+# Untuk development dengan PyTorch, gunakan: pip install -r requirements-dev.txt
+
+-r requirements-prod.txt

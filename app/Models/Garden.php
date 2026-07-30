@@ -19,6 +19,15 @@ class Garden extends Model
         'area_hectare',
         'soil_type',
         'plant_types',
+        'tanggal_tanam',
+        'fase_tanam_saat_ini',
+        'plant_id',
+        'komoditi_id',
+        'color',
+        'keterangan',
+        'kondisi_sekitar',
+        'radius_konteks_m',
+        'jarak_jalan_m',
     ];
 
     protected $casts = [
@@ -28,5 +37,20 @@ class Garden extends Model
     public function landPlot()
     {
         return $this->belongsTo(LandPlot::class, 'land_plot_id');
+    }
+
+    public function plant()
+    {
+        return $this->belongsTo(Plant::class);
+    }
+
+    public function komoditi()
+    {
+        return $this->belongsTo(KomoditiTanaman::class, 'komoditi_id');
+    }
+
+    public function activityLogs()
+    {
+        return $this->hasMany(GardenActivityLog::class);
     }
 }

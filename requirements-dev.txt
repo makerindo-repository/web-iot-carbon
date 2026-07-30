@@ -1,0 +1,16 @@
+# AgriSense Development Requirements
+# Include PyTorch dan CUDA untuk local development dan model training
+
+# Production dependencies
+-r requirements-prod.txt
+
+# Deep Learning (PyTorch + CUDA)
+# ⚠️ HANYA untuk local development/training
+# Jangan install di production/CI/CD
+torch==2.11.0
+cuda-toolkit==13.0.2
+
+# Development tools
+pytest>=7.0
+black>=23.0
+flake8>=6.0

@@ -1,6 +1,6 @@
 FROM php:8.2-fpm
 
-# Install dependensi sistem
+# Install dependensi sistem & Python 3
 RUN apt-get update && apt-get install -y \
     git \
     curl \
@@ -9,7 +9,16 @@ RUN apt-get update && apt-get install -y \
     libxml2-dev \
     zip \
     unzip \
+    ca-certificates \
+    python3 \
+    python3-venv \
+    python3-pip \
+    && update-ca-certificates \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# Setup Python Virtual Environment & Install ML Libraries
+RUN python3 -m venv /opt/ai_env \
+    && /opt/ai_env/bin/pip install --no-cache-dir numpy pandas joblib scikit-learn xgboost torch
 
 # Install ekstensi PHP
 RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd
@@ -32,9 +41,9 @@ COPY . .
 # Run post-install scripts setelah kode lengkap tersedia
 RUN composer run-script post-autoload-dump --no-interaction 2>/dev/null || true
 
-# Set permission storage & cache (aman, bukan 777)
-RUN chown -R www-data:www-data storage bootstrap/cache \
-    && chmod -R 775 storage bootstrap/cache
+# Set permission storage, cache, & public uploads
+RUN chown -R www-data:www-data storage bootstrap/cache public \
+    && chmod -R 775 storage bootstrap/cache public
 
 EXPOSE 9000
 

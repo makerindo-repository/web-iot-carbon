@@ -35,8 +35,40 @@ return [
         ],
     ],
 
+    'google' => [
+        'client_id' => env('GOOGLE_CLIENT_ID'),
+        'client_secret' => env('GOOGLE_CLIENT_SECRET'),
+        'redirect' => env('GOOGLE_REDIRECT_URI', '/auth/google/callback'),
+    ],
+
     'openweather' => [
         'api_key' => env('OPENWEATHER_API_KEY'),
+    ],
+
+    'groq' => [
+        'key' => env('GROQ_API_KEY'),
+    ],
+
+    'openrouter' => [
+        'key' => env('OPENROUTER_API_KEY'),
+        'model' => env('OPENROUTER_MODEL', 'openrouter/free'),
+    ],
+
+    'telegram' => [
+        'bot_token' => env('TELEGRAM_BOT_TOKEN'),
+        'chat_id' => env('TELEGRAM_CHAT_ID'),
+    ],
+
+    'ai_provider' => env('AI_PROVIDER', 'gemini'),
+
+    'cron' => [
+        'sync_token' => env('CRON_SYNC_TOKEN'),
+    ],
+
+    'ai_model_bundle' => [
+        'path' => env('AI_MODEL_BUNDLE_PATH', base_path('../docs/deploy_model_bundle')),
+        'python' => env('PYTHON_EXECUTABLE'),
+        'models' => env('AI_FORECAST_MODELS', 'svm,xgboost,lstm'),
     ],
 
 ];

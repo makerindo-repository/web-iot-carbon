@@ -27,3 +27,8 @@ Thumbs.db
 # Docker
 /docker/
 docker-compose.yml
+.serena/
+
+.env.test
+test_*.php
+agrisense_db 

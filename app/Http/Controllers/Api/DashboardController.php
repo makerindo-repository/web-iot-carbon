@@ -9,21 +9,26 @@ use App\Models\IotReading;
 
 class DashboardController extends Controller
 {
-    // ═══════════════════════════════════════════════════════════
-    //  GET /api/agrisense/dashboard/summary — Ringkasan dashboard
-    // ═══════════════════════════════════════════════════════════
+    // Ringkasan dashboard
     public function getDashboardSummary()
     {
-        $devices = Device::all();
+        // Aggregate count di DB
+        $counts = Device::selectRaw("
+            COUNT(*) as total,
+            SUM(CASE WHEN device_status = 'online' THEN 1 ELSE 0 END) as online,
+            SUM(CASE WHEN device_status = 'warning' THEN 1 ELSE 0 END) as warning,
+            SUM(CASE WHEN device_status = 'offline' THEN 1 ELSE 0 END) as offline
+        ")->first();
+
         $latestReading = IotReading::with('device')->latest('reading_time')->first();
         $latestCci = CciAnalytic::latest()->first();
 
         return response()->json([
             'nodes' => [
-                'total' => $devices->count(),
-                'online' => $devices->where('device_status', 'online')->count(),
-                'warning' => $devices->where('device_status', 'warning')->count(),
-                'offline' => $devices->where('device_status', 'offline')->count(),
+                'total' => (int) $counts->total,
+                'online' => (int) $counts->online,
+                'warning' => (int) $counts->warning,
+                'offline' => (int) $counts->offline,
             ],
             'latest_reading' => $latestReading,
             'latest_cci' => $latestCci ? (float) $latestCci->cci_value : 0,
