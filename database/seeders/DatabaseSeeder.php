@@ -21,7 +21,7 @@ class DatabaseSeeder extends Seeder
             [
                 'name' => 'Super User',
                 'password' => Hash::make('superuser'),
-                'role' => 'superuser',
+                'role' => 'admin',
             ]
         );
 
@@ -30,7 +30,7 @@ class DatabaseSeeder extends Seeder
             [
                 'name' => 'Dosen Peneliti',
                 'password' => Hash::make('password123'),
-                'role' => 'dosen',
+                'role' => 'operator',
             ]
         );
 
@@ -39,7 +39,7 @@ class DatabaseSeeder extends Seeder
             [
                 'name' => 'Mahasiswa Magang',
                 'password' => Hash::make('password123'),
-                'role' => 'mahasiswa',
+                'role' => 'viewer',
             ]
         );
     }
