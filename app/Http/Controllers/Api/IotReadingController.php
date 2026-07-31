@@ -47,6 +47,9 @@ class IotReadingController extends Controller
                 'carbon_data' => [
                     'co2_ppm' => (float) ($r->co2_sensor ?? 0),
                     'tvoc_ppb' => (float) ($r->tvoc_ppb ?? 0),
+                    'ch4_ppm' => (float) ($r->ch4_ppm ?? 0),
+                    'no2_ppb' => (float) ($r->no2_ppb ?? 0),
+                    'n2o_ppb' => (float) ($r->n2o_ppb ?? 0),
                     'cci_value' => (float) ($r->cciAnalytic->cci_value ?? $r->cci_value ?? 0),
                     'carbon_flux' => (float) ($r->carbon_flux ?? 0),
                 ],
@@ -54,6 +57,7 @@ class IotReadingController extends Controller
                     'air_temperature_c' => (float) ($r->air_temperature_sensor ?? 0),
                     'air_humidity_percent' => (float) ($r->air_humidity_sensor ?? 0),
                     'air_pressure_hpa' => (float) ($r->air_pressure_hpa ?? 0),
+                    'wind_speed_kmh' => (float) ($r->wind_speed_kmh ?? 0),
                     'light_lux' => (float) ($r->light_lux ?? 0),
                 ],
                 'soil_7in1' => [
