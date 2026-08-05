@@ -235,6 +235,17 @@ class CarbonFluxService
      */
     public static function calculate(IotReading $reading, float $intervalHours = 1.0): array
     {
+        if ($reading->light_lux === null) {
+            return [
+                'carbon_flux' => 0.0,
+                'gpp' => 0.0,
+                'reco' => 0.0,
+                'npp' => 0.0,
+                'ra' => 0.0,
+                'co2_sequestered' => 0.0,
+                'breakdown' => [],
+            ];
+        }
         // ───────────────────────────────────────────────────────
         // LANGKAH 0: Resolve Jenis Tanaman untuk Lookup Table
         // ───────────────────────────────────────────────────────

@@ -129,6 +129,9 @@ class CciCalculationService
 
     public static function calculateAndStore(IotReading $reading): ?CciAnalytic
     {
+        if ($reading->soil_ph === null && $reading->soil_moisture === null) {
+            return null;
+        }
         // Plausibility soft-skip — kalau ada field di luar rentang fisis,
         // skip kalkulasi dan return null (TIDAK throw, reading tetap simpan
         // untuk audit). Caller (IotReadingController) sudah handle null.

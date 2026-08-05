@@ -44,7 +44,7 @@ class AlertNotificationService
         if ($reading->air_temperature_sensor > $tempMax) {
             $alerts[] = " Suhu Panas: {$reading->air_temperature_sensor}°C (Batas: {$tempMax}°C)";
         }
-        if ($reading->air_humidity_sensor < $humidityMin) {
+        if ($reading->air_humidity_sensor !== null && $reading->air_humidity_sensor > 0 && $reading->air_humidity_sensor < $humidityMin) {
             $alerts[] = " Kelembapan Rendah: {$reading->air_humidity_sensor}% (Batas: {$humidityMin}%)";
         }
 
