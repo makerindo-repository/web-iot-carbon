@@ -158,7 +158,7 @@ class IotReadingController extends Controller
             'air_humidity_sensor' => $request->input('environment.air_humidity_percent') ?? 0,
             'air_pressure_hpa' => $request->input('environment.air_pressure_hpa') ?? 0,
             'cloud_cover_percent' => $request->input('environment.cloud_cover_percent'),
-            'wind_speed_kmh' => $request->input('environment.wind_speed_kmh'),
+            'wind_speed_kmh' => $request->input('environment.wind_speed_kmh_kmh', $request->input('environment.wind_speed_kmh')),
             'light_lux' => $request->input('environment.light_lux'),
             'soil_moisture' => $request->input('soil_7in1.soil_moisture_percent'),
             'soil_temperature' => $request->input('soil_7in1.soil_temperature_c'),
