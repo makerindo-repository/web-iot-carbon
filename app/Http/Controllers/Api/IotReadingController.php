@@ -192,11 +192,6 @@ class IotReadingController extends Controller
             $reading->air_temperature_sensor > $tempMax ||
             $reading->air_humidity_sensor < $humidityMin) {
             $newStatus = 'warning';
-
-            // Kirim notifikasi jika baru warning
-            if ($oldStatus !== 'warning') {
-                app(AlertNotificationService::class)->sendNodeWarning($reading, $co2Threshold, $tempMax, $humidityMin);
-            }
         }
 
         // Update device status (property assignment — device_status & last_seen_at
@@ -240,6 +235,13 @@ class IotReadingController extends Controller
                 'exception' => get_class($e),
                 'message' => $e->getMessage(),
             ]);
+        }
+
+        // Kirim notifikasi secara background agar timeout SMTP tidak merusak data
+        if ($newStatus === 'warning' && $oldStatus !== 'warning') {
+            dispatch(function () use ($reading, $co2Threshold, $tempMax, $humidityMin) {
+                app(AlertNotificationService::class)->sendNodeWarning($reading, $co2Threshold, $tempMax, $humidityMin);
+            })->afterResponse();
         }
 
         return response()->json([
