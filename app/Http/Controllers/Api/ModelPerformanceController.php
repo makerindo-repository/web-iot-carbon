@@ -286,6 +286,12 @@ class ModelPerformanceController extends Controller
 
             $metrics = $this->computeMetrics($predicted, $actual);
 
+            // Filter out obsolete targets (Soil Moisture, pH, etc.) so they don't show up in the UI
+            $validTargets = ['CO2 (ppm)', 'Carbon Flux (NEE AgriSense)', 'Carbon Potential Score'];
+            if (!in_array($target, $validTargets)) {
+                continue;
+            }
+
             if ($metrics) {
                 $evaluation[] = [
                     'model' => strtoupper($model) === 'XGBOOST' ? 'XGBoost' : strtoupper($model),
@@ -421,6 +427,12 @@ class ModelPerformanceController extends Controller
             }
 
             $metrics = $this->computeMetrics($predicted, $actual);
+
+            // Filter out obsolete targets (Soil Moisture, pH, etc.) so they don't show up in the UI
+            $validTargets = ['CO2 (ppm)', 'Carbon Flux (NEE AgriSense)', 'Carbon Potential Score'];
+            if (!in_array($target, $validTargets)) {
+                continue;
+            }
 
             if ($metrics) {
                 $evaluation[] = [
