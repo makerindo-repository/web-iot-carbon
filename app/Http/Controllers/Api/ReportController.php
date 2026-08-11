@@ -148,11 +148,13 @@ class ReportController extends Controller
         $logs = $query->get();
 
         $mapped = $logs->map(fn ($l) => [
-            'Log ID' => 'LOG-'.str_pad($l->id, 3, '0', STR_PAD_LEFT),
-            'Waktu' => $l->created_at->format('d/m/Y H:i:s'),
-            'User' => $l->causer?->name ?? 'System',
-            'Modul' => $l->log_name ?? 'System',
+            'ID Log' => 'LOG-'.str_pad($l->id, 3, '0', STR_PAD_LEFT),
+            'Stempel Waktu' => $l->created_at->format('d/m/Y H:i:s'),
+            'Pengguna' => $l->causer?->name ?? 'Sistem',
             'Aktivitas' => $l->description,
+            'Modul Sistem' => $l->log_name ?? 'Sistem',
+            'Status' => 'Berhasil',
+            'Alamat IP' => $l->properties['ip'] ?? '127.0.0.1',
         ]);
 
         return $this->respondWithFormat($mapped, $format, 'system-logs', $logs->count());

@@ -69,7 +69,8 @@ class SystemController extends Controller
                     'name' => $u->name,
                     'email' => $u->email,
                     'role' => $u->role ?? 'viewer',
-                    'status' => 'active',
+                    'status' => $u->status ?? 'active',
+                    'created_at' => $u->created_at ? $u->created_at->toIso8601String() : null,
                     'lastLogin' => $u->updated_at ? $u->updated_at->toIso8601String() : null,
                 ];
             }));
@@ -91,6 +92,7 @@ class SystemController extends Controller
             'email' => 'required|email|unique:users',
             'password' => 'required|string|min:8|max:64',
             'role' => 'required|in:admin,operator,viewer',
+            'status' => 'sometimes|in:active,inactive',
         ]);
 
         $user = User::create([
@@ -98,6 +100,7 @@ class SystemController extends Controller
             'email' => $validated['email'],
             'password' => bcrypt($validated['password']),
             'role' => $validated['role'],
+            'status' => $validated['status'] ?? 'active',
         ]);
 
         // Sync role ke frontend
@@ -114,6 +117,7 @@ class SystemController extends Controller
             'name' => 'sometimes|string',
             'email' => 'sometimes|email|unique:users,email,'.$id,
             'role' => 'sometimes|in:admin,operator,viewer',
+            'status' => 'sometimes|in:active,inactive',
         ]);
 
         // Cegah admin mengubah peran akunnya sendiri (hindari lockout admin terakhir)
@@ -124,10 +128,15 @@ class SystemController extends Controller
             ], 403);
         }
 
-        $user->update($validated);
+        // Cegah admin menonaktifkan akunnya sendiri
+        if ($user->id === auth()->id() && isset($validated['status']) && $validated['status'] === 'inactive') {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Anda tidak dapat menonaktifkan akun Anda sendiri.',
+            ], 403);
+        }
 
-        // Sync role ke response
-        $user->role = $validated['role'] ?? $user->role;
+        $user->update($validated);
 
         return response()->json(['status' => 'success', 'user' => $user]);
     }

@@ -149,10 +149,30 @@ class CarbonFluxServiceTest extends TestCase
 
     public function test_w_scalar_has_minimum_floor(): void
     {
-        // Even very dry soil → w_scalar min is 0.1
-        $result = CarbonFluxService::calculate($this->makeReading(['soil_moisture' => 0]));
+        // Sensor tanah nyata membaca kering total (moisture=0) tapi suhu/pH
+        // tanah tetap terkirim → dianggap pembacaan asli, bukan sensor absen.
+        $result = CarbonFluxService::calculate($this->makeReading([
+            'soil_moisture' => 0,
+            'soil_temperature' => 24,
+            'soil_ph' => 6.2,
+        ]));
         $this->assertGreaterThanOrEqual(0.1, $result['breakdown']['w_scalar'],
             'w_scalar should have minimum floor of 0.1');
+    }
+
+    public function test_no_soil_sensor_gives_neutral_w_scalar(): void
+    {
+        // Node Carbon di lapangan tidak punya sensor tanah fisik — moisture,
+        // suhu tanah, dan pH semuanya 0 bersamaan (default insert, bukan
+        // hasil ukur). w_scalar harus netral (1.0), bukan lantai stres 0.1,
+        // supaya GPP/NEE/Carbon Potential Score tidak tertekan 10x tanpa dasar.
+        $result = CarbonFluxService::calculate($this->makeReading([
+            'soil_moisture' => 0,
+            'soil_temperature' => 0,
+            'soil_ph' => 0,
+        ]));
+        $this->assertEquals(1.0, $result['breakdown']['w_scalar'],
+            'w_scalar should be neutral (1.0) when no soil sensor is present');
     }
 
     // ═══════════════════════════════════════════════════════════════

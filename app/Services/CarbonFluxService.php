@@ -279,8 +279,20 @@ class CarbonFluxService
         // ───────────────────────────────────────────────────────
         // LANGKAH 4: W_scalar — Stres Air
         // ───────────────────────────────────────────────────────
+        // Node Carbon di lapangan (AGRISENSE-CC-00x) tidak punya sensor tanah
+        // fisik, jadi soil_moisture/soil_temperature/soil_ph tersimpan 0 di
+        // SEMUA baris tanpa sensor (bukan hasil ukur — IotReadingController
+        // selalu insert 0 saat firmware tidak kirim soil_7in1). Kalau memakai
+        // 0 apa adanya, w_scalar terkunci ke lantai stres 0.1 selamanya,
+        // menekan GPP/NEE/CPS 10x dari kondisi wajar. Nol di ketiga kolom
+        // sekaligus = tidak ada sensor terpasang → netral (tidak diasumsikan
+        // stres). Nol hanya pada moisture (temp/pH tetap terisi nyata) tetap
+        // dianggap pembacaan asli tanah kering.
+        $hasSoilSensor = ! ($reading->soil_moisture == 0 && $reading->soil_temperature == 0 && $reading->soil_ph == 0);
         $soilMoisture = $reading->soil_moisture ?? 30;
-        $wScalar = min(1.0, max(0.1, $soilMoisture / self::FIELD_CAPACITY));
+        $wScalar = $hasSoilSensor
+            ? min(1.0, max(0.1, $soilMoisture / self::FIELD_CAPACITY))
+            : 1.0;
 
         // ───────────────────────────────────────────────────────
         // LANGKAH 5: C_scalar — Modulasi CO₂

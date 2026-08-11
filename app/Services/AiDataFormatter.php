@@ -179,14 +179,16 @@ class AiDataFormatter
         $plantType = strtolower((string) ($breakdown['plant_type'] ?? 'default'));
         $cCurrent = $socBaseline + $biomassAcc;
 
+        // Hanya field yang benar-benar dikirim node Carbon di lapangan
+        // (tidak ada sensor tanah fisik — lihat CarbonFluxService::calculate()).
+        // Mensyaratkan soil_* di sini membuat has_full_data selalu 0 walau
+        // data atmosfer/karbon yang dipakai target aktif (CO2, Carbon Flux,
+        // Carbon Potential Score) lengkap dan valid.
         $required = [
             $reading->co2_sensor,
             $reading->air_temperature_sensor,
             $reading->air_humidity_sensor,
             $reading->light_lux,
-            $reading->soil_moisture,
-            $reading->soil_temperature,
-            $reading->soil_ph,
         ];
         $hasFullData = collect($required)->every(fn ($value) => is_numeric($value) && (float) $value > 0);
 

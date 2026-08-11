@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\CarbonDailyStock;
 use App\Models\Device;
+use App\Models\IotReading;
 use App\Models\Planting;
 use App\Services\CarbonFluxService;
 use Carbon\Carbon;
@@ -16,8 +17,16 @@ class NodeController extends Controller
     {
         $devices = Device::with(['landPlot', 'garden.plant', 'garden.komoditi'])->get();
 
-        return response()->json($devices->map(function ($d) {
-            return $this->formatDevice($d);
+        // Pre-fetch last reading per device for real sensor data
+        $latestReadingIds = IotReading::selectRaw('MAX(id) as id')
+            ->groupBy('device_id')
+            ->pluck('id');
+        $lastReadings = $latestReadingIds->isNotEmpty()
+            ? IotReading::whereIn('id', $latestReadingIds)->get()->keyBy('device_id')
+            : collect();
+
+        return response()->json($devices->map(function ($d) use ($lastReadings) {
+            return $this->formatDevice($d, $lastReadings->get($d->id));
         }));
     }
 
@@ -27,7 +36,11 @@ class NodeController extends Controller
             ->where('device_code', $id)
             ->firstOrFail();
 
-        return response()->json($this->formatDevice($device));
+        $lastReading = IotReading::where('device_id', $device->id)
+            ->orderByDesc('id')
+            ->first();
+
+        return response()->json($this->formatDevice($device, $lastReading));
     }
 
     public function store(Request $request)
@@ -58,7 +71,7 @@ class NodeController extends Controller
 
         activity()->performedOn($device)->useLog('Node')->log("Mendaftarkan Node baru: {$device->device_code}");
 
-        return response()->json($this->formatDevice($device), 201);
+        return response()->json($this->formatDevice($device, null), 201);
     }
 
     public function update(Request $request, $id)
@@ -114,7 +127,11 @@ class NodeController extends Controller
 
         activity()->performedOn($device)->useLog('Node')->log("Mengubah konfigurasi Node: {$device->device_code}");
 
-        return response()->json($this->formatDevice($device));
+        $lastReading = IotReading::where('device_id', $device->id)
+            ->orderByDesc('id')
+            ->first();
+
+        return response()->json($this->formatDevice($device, $lastReading));
     }
 
     public function destroy($id)
@@ -136,7 +153,7 @@ class NodeController extends Controller
         return response()->json(['message' => 'Node berhasil dihapus']);
     }
 
-    private function formatDevice($d)
+    private function formatDevice($d, $lastReading = null)
     {
         $latitude = $d->latitude ?? $d->garden?->latitude ?? $d->landPlot?->latitude ?? -6.8500;
         $longitude = $d->longitude ?? $d->garden?->longitude ?? $d->landPlot?->longitude ?? 107.9200;
@@ -154,16 +171,27 @@ class NodeController extends Controller
         $cCurrent = $socBaseline + $cumulativeNpp;
         $cps = CarbonFluxService::calculateCPS($cCurrent, $cMax);
 
+        // Real sensor data from last iot_reading
+        $batteryPercent = $lastReading ? (int) ($lastReading->battery_percent ?? 0) : 0;
+        $batteryVoltage = $lastReading ? (float) ($lastReading->battery_voltage ?? 0) : 0;
+        $rssi = $lastReading ? (int) ($lastReading->signal_strength ?? -120) : -120;
+        $windSpeed = $lastReading ? (float) ($lastReading->wind_speed_kmh ?? 0) : 0;
+
         return [
             'db_id' => $d->id, // Real database ID
             'id' => $d->device_code, // String code for display
             'name' => $d->name ?? 'Node '.$d->device_code,
             'location' => $d->location ?? ($d->garden?->garden_name ?? ($d->landPlot?->plot_name ?? 'Unknown')),
             'coords' => [(float) $latitude, (float) $longitude],
+            'latitude' => (float) $latitude,
+            'longitude' => (float) $longitude,
             'altitude' => (float) ($d->altitude ?? 0),
             'status' => $d->device_status === 'online' ? 'online' : ($d->device_status === 'warning' ? 'warning' : 'offline'),
-            'battery' => 85,
-            'rssi' => -65,
+            'battery' => $batteryPercent,
+            'battery_percent' => $batteryPercent,
+            'battery_voltage' => round($batteryVoltage, 2),
+            'rssi' => $rssi,
+            'wind_speed' => round($windSpeed, 1),
             'lastSeen' => $d->last_seen_at ? Carbon::parse($d->last_seen_at)->toIso8601String() : null,
             'firmware_version' => $d->firmware_version ?? '1.0.0',
             'lahanId' => $d->plot_id ? (string) $d->plot_id : '',

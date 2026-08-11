@@ -250,15 +250,11 @@ class KomoditiController extends Controller
     {
         $komoditi = KomoditiTanaman::findOrFail($id);
 
-        if ($komoditi->is_system) {
-            return response()->json([
-                'message' => 'Data komoditi bawaan sistem tidak dapat dihapus.',
-            ], 403);
-        }
-
         $komoditi->delete(); // Cascade akan menghapus sub-tabel
 
-        return response()->json(['message' => 'Komoditi berhasil dihapus.']);
+        return response()->json([
+            'message' => 'Komoditi berhasil dihapus.',
+        ]);
     }
 
     /**

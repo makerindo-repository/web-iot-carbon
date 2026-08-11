@@ -17,7 +17,7 @@ class KomoditiSeeder extends Seeder
     {
         $data = [
             [
-                'kode' => 'KMD-007', 'nama' => 'Cabai', 'kategori' => 'Hortikultura (Sayur & Bumbu)',
+                'kode' => 'KMD-007', 'nama' => 'Cabai', 'kategori' => 'Hortikultura (Sayur dan Bumbu)',
                 'latin' => 'Capsicum annuum', 'varietas' => 'Rawit, Keriting, Merah Besar',
                 'deskripsi' => 'Komoditas hortikultura strategis dengan nilai ekonomi tinggi.',
                 'fapar' => 0.650, 'epsilon' => 1.400,
@@ -30,7 +30,7 @@ class KomoditiSeeder extends Seeder
                 'nutrisi' => ['nitrogen_min' => 0.3, 'nitrogen_max' => 0.6, 'fosfor_min' => 15, 'fosfor_max' => 30, 'kalium_min' => 100, 'kalium_max' => 200, 'satuan_npk' => 'ppm', 'bahan_organik_min' => 2.5, 'bahan_organik_max' => 5.0, 'rekomendasi_pemupukan' => 'Gunakan pupuk NPK tinggi Kalium saat fase generatif.'],
             ],
             [
-                'kode' => 'KMD-011', 'nama' => 'Sawi', 'kategori' => 'Hortikultura (Sayur & Bumbu)',
+                'kode' => 'KMD-011', 'nama' => 'Sawi', 'kategori' => 'Hortikultura (Sayur dan Bumbu)',
                 'latin' => 'Brassica juncea', 'varietas' => 'Caisim, Pakcoy',
                 'deskripsi' => 'Sayuran daun populer, tumbuh cepat di dataran rendah-menengah.',
                 'fapar' => 0.620, 'epsilon' => 1.300,

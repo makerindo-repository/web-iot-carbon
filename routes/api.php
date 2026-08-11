@@ -21,9 +21,9 @@ use App\Http\Controllers\BmkgController;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
-// Auth (throttle 5/menit)
-Route::post('/login', [AuthController::class, 'login'])->name('login')->middleware('throttle:5,1');
-Route::post('/auth/google', [AuthController::class, 'googleLogin'])->middleware('throttle:5,1');
+// Auth (throttle 30/menit)
+Route::post('/login', [AuthController::class, 'login'])->name('login')->middleware('throttle:30,1');
+Route::post('/auth/google', [AuthController::class, 'googleLogin'])->middleware('throttle:30,1');
 
 // IoT ingestion (rate limit dual-axis: 60/menit per IP + 20/menit per device_id)
 Route::post('/iot/agrisense/readings', [IotReadingController::class, 'storeReading'])

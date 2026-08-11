@@ -35,8 +35,18 @@ class AuthController extends Controller
 
             $result = $response->json();
 
-            // Bypass blockir untuk localhost (127.0.0.1 atau ::1) agar tidak menyusahkan saat testing lokal
-            $isLocalhost = in_array($request->ip(), ['127.0.0.1', '::1']);
+            // Bypass blokir reCAPTCHA untuk localhost, Docker internal IP, Origin/Referer localhost
+            $origin = $request->header('origin', '');
+            $referer = $request->header('referer', '');
+            $isLocalhost = in_array($request->ip(), ['127.0.0.1', '::1']) 
+                || in_array($request->getHost(), ['localhost', '127.0.0.1'])
+                || str_contains($origin, 'localhost')
+                || str_contains($origin, '127.0.0.1')
+                || str_contains($referer, 'localhost')
+                || str_contains($referer, '127.0.0.1')
+                || str_starts_with($request->ip(), '172.')
+                || str_starts_with($request->ip(), '192.168.')
+                || app()->environment('local');
 
             // Guard: bila Google tak terjangkau / balasan non-JSON, $result bisa null.
             // Normalisasi supaya tidak "array offset on null" dan tetap fail-secure.
@@ -61,7 +71,14 @@ class AuthController extends Controller
             ]);
         }
 
-        // Buat Token Sanct_um
+        // Cek apakah akun aktif
+        if (($user->status ?? 'active') === 'inactive') {
+            throw ValidationException::withMessages([
+                'email' => ['Akun Anda sedang tidak aktif. Hubungi administrator untuk mengaktifkan kembali.'],
+            ]);
+        }
+
+        // Buat Token Sanctum
         $token = $user->createToken('agrisense-token')->plainTextToken;
 
         // Log aktivitas login
