@@ -17,17 +17,20 @@ class RoadProximityService
      */
     public function getNearestRoadDistance($lat, $lon, $radius = 150)
     {
-        // Overpass QL query to find highways (roads) around the point
-        $query = "[out:json][timeout:10];
-                  way[\"highway\"](around:{$radius},{$lat},{$lon});
-                  out geom;";
+        $cacheKey = "road_dist_".round((float)$lat, 4)."_".round((float)$lon, 4)."_{$radius}";
 
-        try {
-            $response = Http::timeout(15)
-                ->withHeaders(['User-Agent' => 'AgriSenseApp/1.0'])
-                ->get('https://overpass-api.de/api/interpreter', [
-                    'data' => $query,
-                ]);
+        return \Illuminate\Support\Facades\Cache::remember($cacheKey, now()->addHours(24), function () use ($lat, $lon, $radius) {
+            // Overpass QL query to find highways (roads) around the point
+            $query = "[out:json][timeout:2];
+                      way[\"highway\"](around:{$radius},{$lat},{$lon});
+                      out geom;";
+
+            try {
+                $response = Http::timeout(2)
+                    ->withHeaders(['User-Agent' => 'AgriSenseApp/1.0'])
+                    ->get('https://overpass-api.de/api/interpreter', [
+                        'data' => $query,
+                    ]);
 
             if ($response->successful()) {
                 $data = $response->json();
@@ -77,6 +80,7 @@ class RoadProximityService
 
             return null;
         }
+        });
     }
 
     /**
