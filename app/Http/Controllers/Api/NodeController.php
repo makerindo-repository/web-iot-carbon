@@ -176,6 +176,21 @@ class NodeController extends Controller
         $batteryVoltage = $lastReading ? (float) ($lastReading->battery_voltage ?? 0) : 0;
         $rssi = $lastReading ? (int) ($lastReading->signal_strength ?? -120) : -120;
         $windSpeed = $lastReading ? (float) ($lastReading->wind_speed_kmh ?? 0) : 0;
+        $altitude = (float) ($d->altitude ?? $lastReading?->altitude_m ?? 0);
+
+        // Dynamic status check based on 10-minute timeout
+        $lastSeenTime = $d->last_seen_at ? Carbon::parse($d->last_seen_at) : ($lastReading ? Carbon::parse($lastReading->reading_time) : null);
+        $computedStatus = 'offline';
+        if ($lastSeenTime) {
+            $diffMinutes = $lastSeenTime->diffInMinutes(now());
+            if ($diffMinutes <= 10) {
+                $computedStatus = ($d->device_status === 'warning') ? 'warning' : 'online';
+            } elseif ($diffMinutes <= 30) {
+                $computedStatus = 'warning';
+            } else {
+                $computedStatus = 'offline';
+            }
+        }
 
         return [
             'db_id' => $d->id, // Real database ID
@@ -185,14 +200,17 @@ class NodeController extends Controller
             'coords' => [(float) $latitude, (float) $longitude],
             'latitude' => (float) $latitude,
             'longitude' => (float) $longitude,
-            'altitude' => (float) ($d->altitude ?? 0),
-            'status' => $d->device_status === 'online' ? 'online' : ($d->device_status === 'warning' ? 'warning' : 'offline'),
+            'altitude' => $altitude,
+            'status' => $computedStatus,
             'battery' => $batteryPercent,
             'battery_percent' => $batteryPercent,
             'battery_voltage' => round($batteryVoltage, 2),
             'rssi' => $rssi,
             'wind_speed' => round($windSpeed, 1),
-            'lastSeen' => $d->last_seen_at ? Carbon::parse($d->last_seen_at)->toIso8601String() : null,
+            'co2_ppm' => (float) ($lastReading->co2_sensor ?? 0),
+            'ch4_ppm' => (float) ($lastReading->ch4_ppm ?? 0),
+            'no2_ppb' => (float) ($lastReading->no2_ppb ?? 0),
+            'lastSeen' => $lastSeenTime ? $lastSeenTime->toIso8601String() : null,
             'firmware_version' => $d->firmware_version ?? '1.0.0',
             'lahanId' => $d->plot_id ? (string) $d->plot_id : '',
             'gardenId' => $d->garden_id ? (string) $d->garden_id : '',
@@ -208,6 +226,7 @@ class NodeController extends Controller
             'kondisi_sekitar' => $d->garden?->kondisi_sekitar ?? 'pertanian_terbuka',
             'radius_konteks_m' => $d->garden?->radius_konteks_m ?? 60,
             'jarak_jalan_m' => $d->garden?->jarak_jalan_m ?? null,
+            'dekat_emisi_pabrik' => ($d->garden?->kondisi_sekitar === 'area_industri'),
         ];
     }
 }
