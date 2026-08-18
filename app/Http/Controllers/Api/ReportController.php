@@ -63,7 +63,7 @@ class ReportController extends Controller
                 'Arah Angin' => $windDirText,
                 'Latitude' => round($r->device?->latitude ?? $r->latitude ?? -6.830000, 6),
                 'Longitude' => round($r->device?->longitude ?? $r->longitude ?? 107.910000, 6),
-                'Elevasi (MDPL)' => round($r->altitude_m ?? $r->device?->altitude ?? 720, 0),
+                'Elevasi (MDPL)' => round($r->altitude_m ?: ($r->device?->altitude ?: 720), 0),
                 'Baterai & Tegangan' => "{$batPercent}% ({$batVolt}V)",
                 'CO2 (ppm)' => round($r->co2_sensor ?? 0, 1),
                 'CH4 (ppm)' => round($r->ch4_ppm ?? 0, 1),
@@ -178,7 +178,7 @@ class ReportController extends Controller
     private function getFilteredReadings(Request $request)
     {
         $query = IotReading::with(['device.garden.plant', 'device.garden.komoditi', 'device.landPlot'])
-            ->orderBy('reading_time', 'asc');
+            ->orderBy('reading_time', 'desc');
 
         if ($bounds = $this->dateRangeBounds($request)) {
             $query->whereBetween('reading_time', $bounds);
