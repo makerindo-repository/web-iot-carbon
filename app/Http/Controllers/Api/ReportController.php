@@ -41,7 +41,7 @@ class ReportController extends Controller
         $data = $this->getFilteredReadings($request);
 
         $mapped = $data->map(function ($r) {
-            $rawDir = $r->wind_direction_deg ?? $r->wind_direction ?? 180;
+            $rawDir = $r->wind_direction_deg ?? $r->wind_direction ?? 0;
             $windDirText = 'Utara (N)';
             if (is_numeric($rawDir)) {
                 $dirs = ['Utara (N)', 'Timur Laut (NE)', 'Timur (E)', 'Tenggara (SE)', 'Selatan (S)', 'Barat Daya (SW)', 'Barat (W)', 'Barat Laut (NW)'];
