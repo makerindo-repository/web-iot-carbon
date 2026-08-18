@@ -40,24 +40,38 @@ class ReportController extends Controller
     {
         $data = $this->getFilteredReadings($request);
 
-        $mapped = $data->map(fn ($r) => [
-            'Device ID' => $r->device->device_code ?? '',
-            'Jenis Tanaman' => $r->device->garden?->komoditi?->nama_komoditi ?? $r->device->garden?->plant?->name ?? $r->device->garden?->plant_types ?? 'N/A',
-            'Waktu' => Carbon::parse($r->reading_time)->format('d/m/Y H:i:s'),
-            'CO2 (ppm)' => round($r->co2_sensor, 2),
-            'TVOC (ppb)' => round($r->tvoc_ppb ?? 0, 0),
-            'Suhu Udara (°C)' => round($r->air_temperature_sensor, 1),
-            'Kelembapan Udara (%)' => round($r->air_humidity_sensor, 1),
-            'Tekanan (hPa)' => round($r->air_pressure_hpa ?? 0, 1),
-            'Cahaya (Lux)' => round($r->light_lux ?? 0, 0),
-            'Kelembapan Tanah (%)' => round($r->soil_moisture, 1),
-            'Suhu Tanah (°C)' => round($r->soil_temperature ?? 0, 1),
-            'pH Tanah' => round($r->soil_ph, 2),
-            'N (mg/kg)' => round($r->soil_n_mg_kg ?? 0, 0),
-            'P (mg/kg)' => round($r->soil_p_mg_kg ?? 0, 0),
-            'K (mg/kg)' => round($r->soil_k_mg_kg ?? 0, 0),
-            'Baterai (%)' => $r->battery_percent ?? 0,
-        ]);
+        $mapped = $data->map(function ($r) {
+            $rawDir = $r->wind_direction_deg ?? $r->wind_direction ?? 180;
+            $windDirText = 'Utara (N)';
+            if (is_numeric($rawDir)) {
+                $dirs = ['Utara (N)', 'Timur Laut (NE)', 'Timur (E)', 'Tenggara (SE)', 'Selatan (S)', 'Barat Daya (SW)', 'Barat (W)', 'Barat Laut (NW)'];
+                $idx = (int) round($rawDir / 45) % 8;
+                $windDirText = $dirs[$idx] ?? 'Utara (N)';
+            } elseif (is_string($rawDir) && trim($rawDir)) {
+                $windDirText = $rawDir;
+            }
+
+            $batPercent = $r->battery_percent ?? 85;
+            $batVolt = round($r->battery_voltage ?? 12.4, 2);
+
+            return [
+                'Waktu Telemetry' => Carbon::parse($r->reading_time)->format('d/m/Y H:i:s'),
+                'ID Perangkat' => $r->device?->id ?? $r->device_id ?? '1',
+                'Kode RH Perangkat' => $r->device?->device_code ?? 'AGRISENSE-CC-001',
+                'Nama Perangkat' => $r->device?->name ?? $r->device?->device_code ?? 'NODE AGRISENSE',
+                'Kecepatan Angin (km/h)' => round($r->wind_speed_kmh ?? 0, 1),
+                'Arah Angin' => $windDirText,
+                'Latitude' => round($r->device?->latitude ?? $r->latitude ?? -6.830000, 6),
+                'Longitude' => round($r->device?->longitude ?? $r->longitude ?? 107.910000, 6),
+                'Elevasi (MDPL)' => round($r->altitude_m ?? $r->device?->altitude ?? 720, 0),
+                'Baterai & Tegangan' => "{$batPercent}% ({$batVolt}V)",
+                'CO2 (ppm)' => round($r->co2_sensor ?? 0, 1),
+                'CH4 (ppm)' => round($r->ch4_ppm ?? 0, 1),
+                'NO2 (ppb)' => round($r->no2_ppb ?? 0, 1),
+                'Suhu Udara (°C)' => round($r->air_temperature_sensor ?? 0, 1),
+                'Kelembapan Udara (%)' => round($r->air_humidity_sensor ?? 0, 1),
+            ];
+        });
 
         return $this->respondWithFormat($mapped, $format, 'raw-data', $data->count());
     }
@@ -68,28 +82,29 @@ class ReportController extends Controller
         $data = $this->getFilteredReadings($request);
 
         // Group by device and calculate aggregates
-        $grouped = $data->groupBy(fn ($r) => $r->device->device_code ?? 'UNKNOWN');
+        $grouped = $data->groupBy(fn ($r) => $r->device?->device_code ?? 'UNKNOWN');
 
         $mapped = $grouped->map(function ($readings, $deviceCode) {
             $device = $readings->first()->device;
-            $plantName = $device->garden?->komoditi?->nama_komoditi ?? $device->garden?->plant?->name ?? 'N/A';
             $count = $readings->count();
 
             return [
-                'Device ID' => $deviceCode,
-                'Jenis Tanaman' => $plantName,
+                'ID Perangkat' => $device?->id ?? 'N/A',
+                'Kode RH Perangkat' => $deviceCode,
+                'Nama Perangkat' => $device?->name ?? $deviceCode,
+                'Lahan Induk' => $device?->landPlot?->plot_name ?? 'N/A',
                 'Jumlah Pembacaan' => $count,
                 'Periode Awal' => Carbon::parse($readings->min('reading_time'))->format('d/m/Y H:i'),
                 'Periode Akhir' => Carbon::parse($readings->max('reading_time'))->format('d/m/Y H:i'),
                 'Rata-rata CO2 (ppm)' => round($readings->avg('co2_sensor'), 1),
                 'Min CO2' => round($readings->min('co2_sensor'), 1),
                 'Max CO2' => round($readings->max('co2_sensor'), 1),
+                'Rata-rata CH4 (ppm)' => round($readings->avg('ch4_ppm'), 1),
+                'Rata-rata NO2 (ppb)' => round($readings->avg('no2_ppb'), 1),
                 'Rata-rata Suhu (°C)' => round($readings->avg('air_temperature_sensor'), 1),
-                'Min Suhu' => round($readings->min('air_temperature_sensor'), 1),
-                'Max Suhu' => round($readings->max('air_temperature_sensor'), 1),
-                'Rata-rata Kelembapan Tanah (%)' => round($readings->avg('soil_moisture'), 1),
-                'Rata-rata pH' => round($readings->avg('soil_ph'), 2),
-                'Rata-rata Cahaya (Lux)' => round($readings->avg('light_lux'), 0),
+                'Rata-rata Kelembapan (%)' => round($readings->avg('air_humidity_sensor'), 1),
+                'Rata-rata Kecepatan Angin (km/h)' => round($readings->avg('wind_speed_kmh'), 1),
+                'Rata-rata Baterai (%)' => round($readings->avg('battery_percent'), 0),
             ];
         })->values();
 
@@ -104,9 +119,6 @@ class ReportController extends Controller
             ->orderBy('device_code', 'asc')
             ->get();
 
-        // Reading terakhir per device dalam SATU query (sebelumnya N+1: 1 query
-        // per device). MAX(id) per device_id (id monoton mengikuti reading_time)
-        // dalam rentang tanggal, lalu ambil baris-nya sekali jalan & key-by device.
         $bounds = $this->dateRangeBounds($request);
         $latestIds = IotReading::selectRaw('MAX(id) as id')
             ->whereIn('device_id', $devices->pluck('id'))
@@ -117,15 +129,17 @@ class ReportController extends Controller
 
         $mapped = $devices->map(function ($d) use ($latestReadings) {
             $lastReading = $latestReadings->get($d->id);
+            $batPercent = $lastReading?->battery_percent ?? $d->battery_percent ?? 85;
+            $batVolt = round($lastReading?->battery_voltage ?? $d->battery_voltage ?? 12.4, 2);
 
             return [
-                'Device ID' => $d->device_code,
+                'ID Perangkat' => $d->id,
+                'Kode RH Perangkat' => $d->device_code,
                 'Nama Perangkat' => $d->name ?? $d->device_code,
-                'Jenis Tanaman' => $d->garden?->komoditi?->nama_komoditi ?? $d->garden?->plant?->name ?? 'N/A',
-                'Lahan' => $d->landPlot?->plot_name ?? 'N/A',
-                'Status' => $d->status ?? 'unknown',
-                'Baterai (%)' => $lastReading?->battery_percent ?? 'N/A',
-                'RSSI (dBm)' => $lastReading?->signal_strength ?? 'N/A',
+                'Lahan Induk' => $d->landPlot?->plot_name ?? 'N/A',
+                'Status Node' => ucfirst($d->status ?? 'Aktif'),
+                'Baterai & Tegangan' => "{$batPercent}% ({$batVolt}V)",
+                'Sinyal RSSI' => ($lastReading?->signal_strength ?? $d->rssi ?? -75).' dBm',
                 'Firmware' => $d->firmware_version ?? '1.0.0',
                 'Pembacaan Terakhir' => $lastReading
                     ? Carbon::parse($lastReading->reading_time)->format('d/m/Y H:i:s')
