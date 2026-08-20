@@ -25,46 +25,40 @@ class GenerateHistoricalData extends Command
 
         $this->info("Memulai regenerasi data historis ({$startDate->format('d M Y')} s/d {$endDate->format('d M Y')})...");
 
-        // 1. Memastikan minimal ada Node terdaftar jika sebelumnya sempat terhapus
-        $devices = Device::all();
-        if ($devices->isEmpty()) {
-            $this->warn("TIDAK ADA NODE TERDAFTAR! Membuat otomatis node standar...");
-            
-            $plot = LandPlot::firstOrCreate(
-                ['plot_name' => 'Lahan Utama AgriSense'],
-                ['latitude' => -6.830000, 'longitude' => 107.910000, 'altitude' => 720]
+        // 1. Memastikan ke-4 Node terdaftar di database (buat otomatis jika ada node terhapus)
+        $plot = LandPlot::firstOrCreate(
+            ['plot_name' => 'Lahan Utama AgriSense'],
+            ['latitude' => -6.830000, 'longitude' => 107.910000, 'altitude' => 720]
+        );
+
+        $garden = Garden::firstOrCreate(
+            ['garden_name' => 'Kebun Hortikultura Utama'],
+            ['plot_id' => $plot->id, 'plant_types' => 'Cabai & Hortikultura', 'latitude' => -6.830000, 'longitude' => 107.910000]
+        );
+
+        $defaultNodes = [
+            ['device_code' => 'AGRISENSE-CC-001', 'name' => 'NODE AGRISENSE-CC-001', 'latitude' => -6.841104, 'longitude' => 107.899896, 'altitude' => 507],
+            ['device_code' => 'AGRISENSE-CC-002', 'name' => 'NODE AGRISENSE-CC-002', 'latitude' => -6.914744, 'longitude' => 107.609810, 'altitude' => 720],
+            ['device_code' => 'AGRISENSE-CC-003', 'name' => 'NODE AGRISENSE-CC-003', 'latitude' => -6.841149, 'longitude' => 107.899902, 'altitude' => 507],
+            ['device_code' => 'AGRISENSE-CC-004', 'name' => 'NODE AGRISENSE-CC-004', 'latitude' => -6.967700, 'longitude' => 107.659100, 'altitude' => 678],
+        ];
+
+        foreach ($defaultNodes as $n) {
+            Device::firstOrCreate(
+                ['device_code' => $n['device_code']],
+                [
+                    'name' => $n['name'],
+                    'plot_id' => $plot->id,
+                    'garden_id' => $garden->id,
+                    'latitude' => $n['latitude'],
+                    'longitude' => $n['longitude'],
+                    'altitude' => $n['altitude'],
+                    'firmware_version' => '1.0.0',
+                ]
             );
-
-            $garden = Garden::firstOrCreate(
-                ['garden_name' => 'Kebun Hortikultura Utama'],
-                ['plot_id' => $plot->id, 'plant_types' => 'Cabai & Hortikultura', 'latitude' => -6.830000, 'longitude' => 107.910000]
-            );
-
-            $defaultNodes = [
-                ['device_code' => 'AGRISENSE-CC-001', 'name' => 'NODE AGRISENSE-CC-001', 'latitude' => -6.841104, 'longitude' => 107.899896, 'altitude' => 507, 'status' => 'online'],
-                ['device_code' => 'AGRISENSE-CC-002', 'name' => 'NODE AGRISENSE-CC-002', 'latitude' => -6.914744, 'longitude' => 107.609810, 'altitude' => 720, 'status' => 'online'],
-                ['device_code' => 'AGRISENSE-CC-003', 'name' => 'NODE AGRISENSE-CC-003', 'latitude' => -6.841149, 'longitude' => 107.899902, 'altitude' => 507, 'status' => 'online'],
-                ['device_code' => 'AGRISENSE-CC-004', 'name' => 'NODE AGRISENSE-CC-004', 'latitude' => -6.967700, 'longitude' => 107.659100, 'altitude' => 678, 'status' => 'online'],
-            ];
-
-            foreach ($defaultNodes as $n) {
-                Device::firstOrCreate(
-                    ['device_code' => $n['device_code']],
-                    [
-                        'name' => $n['name'],
-                        'plot_id' => $plot->id,
-                        'garden_id' => $garden->id,
-                        'latitude' => $n['latitude'],
-                        'longitude' => $n['longitude'],
-                        'altitude' => $n['altitude'],
-                        'status' => $n['status'],
-                        'firmware_version' => '1.0.0',
-                    ]
-                );
-            }
-
-            $devices = Device::all();
         }
+
+        $devices = Device::all();
 
         $this->info("Ditemukan {$devices->count()} node aktif di database.");
 
