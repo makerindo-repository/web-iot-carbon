@@ -11,19 +11,19 @@ use Illuminate\Support\Facades\DB;
 
 class GenerateHistoricalData extends Command
 {
-    protected $signature = 'agrisense:generate-historical {--start=2026-05-01} {--end=2026-07-31} {--interval=1}';
+    protected $signature = 'agrisense:generate-historical {--start=2026-05-01} {--end=2026-07-31} {--interval-minutes=5}';
     protected $description = 'Generasi/pemulihan data historis telemetri sensor dari Mei s/d Juli 2026 untuk seluruh node';
 
     public function handle()
     {
         $startInput = $this->option('start');
         $endInput = $this->option('end');
-        $intervalHours = (int) $this->option('interval');
+        $intervalMinutes = (int) ($this->option('interval-minutes') ?: 5);
 
         $startDate = Carbon::parse($startInput)->startOfDay();
         $endDate = Carbon::parse($endInput)->endOfDay();
 
-        $this->info("Memulai regenerasi data historis ({$startDate->format('d M Y')} s/d {$endDate->format('d M Y')})...");
+        $this->info("Memulai regenerasi data historis interval {$intervalMinutes} menit ({$startDate->format('d M Y')} s/d {$endDate->format('d M Y')})...");
 
         // 1. Memastikan LandPlot & Garden tersedia untuk asosiasi node
         $plot = LandPlot::first();
@@ -78,26 +78,21 @@ class GenerateHistoricalData extends Command
 
         $this->info("Ditemukan {$devices->count()} node aktif di database.");
 
-        // Hapus data seeder/generasi lama pada rentang tanggal untuk mencegah bentrok duplicate entry
+        // Hapus SELURUH data telemetri lama pada rentang tanggal tersebut agar database bersih & tidak menumpuk
         $deletedCount = DB::table('iot_readings')
             ->whereIn('device_id', $devices->pluck('id')->all())
             ->whereBetween('reading_time', [$startDate->format('Y-m-d H:i:s'), $endDate->format('Y-m-d H:i:s')])
-            ->where(function ($query) {
-                $query->whereNull('message_id')
-                    ->orWhere('message_id', 'like', 'SEED-%')
-                    ->orWhere('message_id', 'like', 'GEN-%');
-            })
             ->delete();
 
         if ($deletedCount > 0) {
-            $this->info("Menghapus {$deletedCount} baris data seeder/generasi lama pada rentang tersebut.");
+            $this->info("Membersihkan {$deletedCount} baris data telemetri lama pada rentang tanggal tersebut.");
         }
 
         $totalInserted = 0;
         $chunk = [];
 
         foreach ($devices as $d) {
-            $this->info("Menghasilkan telemetri untuk Node: {$d->device_code}");
+            $this->info("Menghasilkan telemetri 5-menit untuk Node: {$d->device_code}");
             $curr = clone $startDate;
 
             while ($curr <= $endDate) {
@@ -165,7 +160,7 @@ class GenerateHistoricalData extends Command
                     $chunk = [];
                 }
 
-                $curr->addHours($intervalHours);
+                $curr->addMinutes($intervalMinutes);
             }
         }
 
@@ -174,7 +169,7 @@ class GenerateHistoricalData extends Command
             $totalInserted += count($chunk);
         }
 
-        $this->info("SELESAI! Berhasil menghasilkan {$totalInserted} baris telemetri historis dari Mei s/d Juli 2026.");
+        $this->info("SELESAI! Berhasil menghasilkan {$totalInserted} baris telemetri historis (interval {$intervalMinutes} menit) dari Mei s/d Juli 2026.");
         return 0;
     }
 }
