@@ -44,6 +44,7 @@ class GenerateHistoricalData extends Command
                 ['device_code' => 'AGRISENSE-CC-001', 'name' => 'NODE AGRISENSE-CC-001', 'latitude' => -6.841104, 'longitude' => 107.899896, 'altitude' => 507, 'status' => 'online'],
                 ['device_code' => 'AGRISENSE-CC-002', 'name' => 'NODE AGRISENSE-CC-002', 'latitude' => -6.914744, 'longitude' => 107.609810, 'altitude' => 720, 'status' => 'online'],
                 ['device_code' => 'AGRISENSE-CC-003', 'name' => 'NODE AGRISENSE-CC-003', 'latitude' => -6.841149, 'longitude' => 107.899902, 'altitude' => 507, 'status' => 'online'],
+                ['device_code' => 'AGRISENSE-CC-004', 'name' => 'NODE AGRISENSE-CC-004', 'latitude' => -6.967700, 'longitude' => 107.659100, 'altitude' => 678, 'status' => 'online'],
             ];
 
             foreach ($defaultNodes as $n) {
@@ -120,6 +121,15 @@ class GenerateHistoricalData extends Command
                     'sensor_status' => 'normal',
                     'firmware_version' => $d->firmware_version ?? '1.0.0',
                     'data_valid' => true,
+                    'soil_temperature' => round($temp - 1.5, 1),
+                    'soil_moisture' => rand(350, 750) / 10,
+                    'soil_ec_ms_cm' => rand(50, 150) / 100,
+                    'soil_ph' => rand(62, 75) / 10,
+                    'soil_n_mg_kg' => rand(30, 80),
+                    'soil_p_mg_kg' => rand(15, 45),
+                    'soil_k_mg_kg' => rand(60, 150),
+                    'soil_organic_carbon' => 1.8,
+                    'carbon_flux' => 0.002,
                     'created_at' => $curr->format('Y-m-d H:i:s'),
                     'updated_at' => $curr->format('Y-m-d H:i:s'),
                 ];
