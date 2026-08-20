@@ -14,6 +14,9 @@ class ReportController extends Controller
     // Export data (CSV/JSON)
     public function exportReport(Request $request)
     {
+        @ini_set('memory_limit', '1024M');
+        @ini_set('max_execution_time', '300');
+
         $format = $request->get('format', 'csv');
         $type = $request->get('type', 'raw-data');
 
@@ -177,7 +180,12 @@ class ReportController extends Controller
     // Query readings dengan filter
     private function getFilteredReadings(Request $request)
     {
-        $query = IotReading::with(['device.garden.plant', 'device.garden.komoditi', 'device.landPlot'])
+        $type = $request->get('type', 'raw-data');
+        $relations = $type === 'analysis'
+            ? ['device.garden.plant', 'device.garden.komoditi', 'device.landPlot']
+            : ['device'];
+
+        $query = IotReading::with($relations)
             ->orderBy('reading_time', 'desc');
 
         if ($bounds = $this->dateRangeBounds($request)) {
