@@ -141,6 +141,16 @@ class IotReadingController extends Controller
         $serverTime = now();
         $messageId = $this->makeUniqueMessageId($request->message_id, $device->device_code);
 
+        $airTemp = $request->input('environment.air_temperature_c') ?? 0;
+        $useBmkgTemp = AgrisenseSetting::where('key', 'useBmkgTemp')->value('value') === '1';
+        if ($useBmkgTemp) {
+            $bmkg = \App\Models\BmkgReading::where('plot_id', $device->plot_id)->latest('timestamp_bmkg')->first()
+                    ?? \App\Models\BmkgReading::latest('timestamp_bmkg')->first();
+            if ($bmkg && $bmkg->air_temperature_c > 0) {
+                $airTemp = (float) $bmkg->air_temperature_c;
+            }
+        }
+
         $reading = IotReading::create([
             'device_id' => $device->id,
             'plot_id' => $device->plot_id,
@@ -154,7 +164,7 @@ class IotReadingController extends Controller
             'ch4_ppm' => $request->input('carbon_data.ch4_ppm') ?? 0,
             'no2_ppb' => $request->input('carbon_data.no2_ppb') ?? 0,
             'n2o_ppb' => $request->input('carbon_data.n2o_ppb') ?? 0,
-            'air_temperature_sensor' => $request->input('environment.air_temperature_c') ?? 0,
+            'air_temperature_sensor' => $airTemp,
             'air_humidity_sensor' => $request->input('environment.air_humidity_percent') ?? 0,
             'air_pressure_hpa' => $request->input('environment.air_pressure_hpa') ?? 0,
             'cloud_cover_percent' => $request->input('environment.cloud_cover_percent') ?? 0,

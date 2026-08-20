@@ -178,6 +178,7 @@ class SystemController extends Controller
             'telegramBot' => '0',
             'telegramInviteLink' => '',
             'notificationEmails' => '[]',
+            'useBmkgTemp' => '0',
         ];
 
         $merged = array_merge($defaults, $settings);
@@ -200,7 +201,7 @@ class SystemController extends Controller
             $allowedKeys = [
                 'appName', 'appLogo', 'co2Threshold', 'tempMax', 'humidityMin',
                 'samplingInterval', 'mqttUrl', 'aiEngineKey', 'emailAlert', 'telegramBot', 'telegramInviteLink',
-                'notificationEmails',
+                'notificationEmails', 'useBmkgTemp',
             ];
 
             $data = $request->all();
