@@ -187,8 +187,8 @@ class ReportController extends Controller
             $query->whereHas('device', fn ($q) => $q->where('device_code', $request->device_id));
         }
 
-        // Limit maks 10.000 baris
-        return $query->limit(10000)->get();
+        // Limit maks 150.000 baris agar data 3 bulan (105k) terangkum penuh saat ekspor
+        return $query->limit(150000)->get();
     }
 
     private function dateRangeBounds(Request $request): ?array
