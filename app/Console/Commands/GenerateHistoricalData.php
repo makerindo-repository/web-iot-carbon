@@ -78,6 +78,21 @@ class GenerateHistoricalData extends Command
 
         $this->info("Ditemukan {$devices->count()} node aktif di database.");
 
+        // Hapus data seeder/generasi lama pada rentang tanggal untuk mencegah bentrok duplicate entry
+        $deletedCount = DB::table('iot_readings')
+            ->whereIn('device_id', $devices->pluck('id')->all())
+            ->whereBetween('reading_time', [$startDate->format('Y-m-d H:i:s'), $endDate->format('Y-m-d H:i:s')])
+            ->where(function ($query) {
+                $query->whereNull('message_id')
+                    ->orWhere('message_id', 'like', 'SEED-%')
+                    ->orWhere('message_id', 'like', 'GEN-%');
+            })
+            ->delete();
+
+        if ($deletedCount > 0) {
+            $this->info("Menghapus {$deletedCount} baris data seeder/generasi lama pada rentang tersebut.");
+        }
+
         $totalInserted = 0;
         $chunk = [];
 
