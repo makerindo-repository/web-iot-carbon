@@ -25,16 +25,33 @@ class GenerateHistoricalData extends Command
 
         $this->info("Memulai regenerasi data historis ({$startDate->format('d M Y')} s/d {$endDate->format('d M Y')})...");
 
-        // 1. Memastikan ke-4 Node terdaftar di database (buat otomatis jika ada node terhapus)
-        $plot = LandPlot::firstOrCreate(
-            ['plot_name' => 'Lahan Utama AgriSense'],
-            ['latitude' => -6.830000, 'longitude' => 107.910000, 'altitude' => 720]
-        );
+        // 1. Memastikan LandPlot & Garden tersedia untuk asosiasi node
+        $plot = LandPlot::first();
+        if (!$plot) {
+            $plot = LandPlot::create([
+                'plot_code' => 'PLOT-001',
+                'plot_name' => 'Lahan Utama AgriSense',
+                'owner_name' => 'Kelompok Tani Utama',
+                'address' => 'Padasuka, Sumedang',
+                'latitude' => -6.830000,
+                'longitude' => 107.910000,
+                'area_hectare' => 5.0,
+                'soc_baseline_gc_m2' => 75.0,
+                'c_max_gc_m2' => 150.0,
+            ]);
+        }
 
-        $garden = Garden::firstOrCreate(
-            ['garden_name' => 'Kebun Hortikultura Utama'],
-            ['plot_id' => $plot->id, 'plant_types' => 'Cabai & Hortikultura', 'latitude' => -6.830000, 'longitude' => 107.910000]
-        );
+        $garden = Garden::first();
+        if (!$garden) {
+            $garden = Garden::create([
+                'garden_code' => 'GARDEN-001',
+                'garden_name' => 'Kebun Hortikultura Utama',
+                'plot_id' => $plot->id,
+                'plant_types' => 'Cabai & Hortikultura',
+                'latitude' => -6.830000,
+                'longitude' => 107.910000,
+            ]);
+        }
 
         $defaultNodes = [
             ['device_code' => 'AGRISENSE-CC-001', 'name' => 'NODE AGRISENSE-CC-001', 'latitude' => -6.841104, 'longitude' => 107.899896, 'altitude' => 507],
