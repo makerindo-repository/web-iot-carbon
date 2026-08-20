@@ -49,18 +49,18 @@ class ReportController extends Controller
                 \Illuminate\Support\Facades\DB::raw("DATE_FORMAT(r.reading_time, '%d/%m/%Y %H:%i:%s') as `Waktu Telemetry`"),
                 \Illuminate\Support\Facades\DB::raw("COALESCE(d.id, r.device_id, 1) as `ID Perangkat`"),
                 \Illuminate\Support\Facades\DB::raw("COALESCE(d.device_code, 'AGRISENSE-CC-001') as `Kode RH Perangkat`"),
-                \Illuminate\Support\Facades\DB::raw("COALESCE(d.name, d.device_code, 'NODE AGRISENSE') as `Nama Perangkat`"),
+                \Illuminate\Support\Facades\DB::raw("COALESCE(d.device_code, 'NODE AGRISENSE') as `Nama Perangkat`"),
                 \Illuminate\Support\Facades\DB::raw("ROUND(COALESCE(r.wind_speed_kmh, 0), 1) as `Kecepatan Angin (km/h)`"),
                 \Illuminate\Support\Facades\DB::raw("
                     CASE 
-                        WHEN ROUND(COALESCE(r.wind_direction_deg, r.wind_direction, 0) / 45) % 8 = 0 THEN 'Utara (N)'
-                        WHEN ROUND(COALESCE(r.wind_direction_deg, r.wind_direction, 0) / 45) % 8 = 1 THEN 'Timur Laut (NE)'
-                        WHEN ROUND(COALESCE(r.wind_direction_deg, r.wind_direction, 0) / 45) % 8 = 2 THEN 'Timur (E)'
-                        WHEN ROUND(COALESCE(r.wind_direction_deg, r.wind_direction, 0) / 45) % 8 = 3 THEN 'Tenggara (SE)'
-                        WHEN ROUND(COALESCE(r.wind_direction_deg, r.wind_direction, 0) / 45) % 8 = 4 THEN 'Selatan (S)'
-                        WHEN ROUND(COALESCE(r.wind_direction_deg, r.wind_direction, 0) / 45) % 8 = 5 THEN 'Barat Daya (SW)'
-                        WHEN ROUND(COALESCE(r.wind_direction_deg, r.wind_direction, 0) / 45) % 8 = 6 THEN 'Barat (W)'
-                        WHEN ROUND(COALESCE(r.wind_direction_deg, r.wind_direction, 0) / 45) % 8 = 7 THEN 'Barat Laut (NW)'
+                        WHEN ROUND(COALESCE(r.wind_direction_deg, 0) / 45) % 8 = 0 THEN 'Utara (N)'
+                        WHEN ROUND(COALESCE(r.wind_direction_deg, 0) / 45) % 8 = 1 THEN 'Timur Laut (NE)'
+                        WHEN ROUND(COALESCE(r.wind_direction_deg, 0) / 45) % 8 = 2 THEN 'Timur (E)'
+                        WHEN ROUND(COALESCE(r.wind_direction_deg, 0) / 45) % 8 = 3 THEN 'Tenggara (SE)'
+                        WHEN ROUND(COALESCE(r.wind_direction_deg, 0) / 45) % 8 = 4 THEN 'Selatan (S)'
+                        WHEN ROUND(COALESCE(r.wind_direction_deg, 0) / 45) % 8 = 5 THEN 'Barat Daya (SW)'
+                        WHEN ROUND(COALESCE(r.wind_direction_deg, 0) / 45) % 8 = 6 THEN 'Barat (W)'
+                        WHEN ROUND(COALESCE(r.wind_direction_deg, 0) / 45) % 8 = 7 THEN 'Barat Laut (NW)'
                         ELSE 'Utara (N)'
                     END as `Arah Angin`
                 "),
