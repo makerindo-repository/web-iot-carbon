@@ -41,42 +41,55 @@ class ReportController extends Controller
     // Export raw sensor data
     private function exportRawData(Request $request, string $format)
     {
-        $data = $this->getFilteredReadings($request);
+        $bounds = $this->dateRangeBounds($request);
 
-        $mapped = $data->map(function ($r) {
-            $rawDir = $r->wind_direction_deg ?? $r->wind_direction ?? 0;
-            $windDirText = 'Utara (N)';
-            if (is_numeric($rawDir)) {
-                $dirs = ['Utara (N)', 'Timur Laut (NE)', 'Timur (E)', 'Tenggara (SE)', 'Selatan (S)', 'Barat Daya (SW)', 'Barat (W)', 'Barat Laut (NW)'];
-                $idx = (int) round($rawDir / 45) % 8;
-                $windDirText = $dirs[$idx] ?? 'Utara (N)';
-            } elseif (is_string($rawDir) && trim($rawDir)) {
-                $windDirText = $rawDir;
-            }
+        $query = \Illuminate\Support\Facades\DB::table('iot_readings as r')
+            ->leftJoin('devices as d', 'r.device_id', '=', 'd.id')
+            ->select([
+                \Illuminate\Support\Facades\DB::raw("DATE_FORMAT(r.reading_time, '%d/%m/%Y %H:%i:%s') as `Waktu Telemetry`"),
+                \Illuminate\Support\Facades\DB::raw("COALESCE(d.id, r.device_id, 1) as `ID Perangkat`"),
+                \Illuminate\Support\Facades\DB::raw("COALESCE(d.device_code, 'AGRISENSE-CC-001') as `Kode RH Perangkat`"),
+                \Illuminate\Support\Facades\DB::raw("COALESCE(d.name, d.device_code, 'NODE AGRISENSE') as `Nama Perangkat`"),
+                \Illuminate\Support\Facades\DB::raw("ROUND(COALESCE(r.wind_speed_kmh, 0), 1) as `Kecepatan Angin (km/h)`"),
+                \Illuminate\Support\Facades\DB::raw("
+                    CASE 
+                        WHEN ROUND(COALESCE(r.wind_direction_deg, r.wind_direction, 0) / 45) % 8 = 0 THEN 'Utara (N)'
+                        WHEN ROUND(COALESCE(r.wind_direction_deg, r.wind_direction, 0) / 45) % 8 = 1 THEN 'Timur Laut (NE)'
+                        WHEN ROUND(COALESCE(r.wind_direction_deg, r.wind_direction, 0) / 45) % 8 = 2 THEN 'Timur (E)'
+                        WHEN ROUND(COALESCE(r.wind_direction_deg, r.wind_direction, 0) / 45) % 8 = 3 THEN 'Tenggara (SE)'
+                        WHEN ROUND(COALESCE(r.wind_direction_deg, r.wind_direction, 0) / 45) % 8 = 4 THEN 'Selatan (S)'
+                        WHEN ROUND(COALESCE(r.wind_direction_deg, r.wind_direction, 0) / 45) % 8 = 5 THEN 'Barat Daya (SW)'
+                        WHEN ROUND(COALESCE(r.wind_direction_deg, r.wind_direction, 0) / 45) % 8 = 6 THEN 'Barat (W)'
+                        WHEN ROUND(COALESCE(r.wind_direction_deg, r.wind_direction, 0) / 45) % 8 = 7 THEN 'Barat Laut (NW)'
+                        ELSE 'Utara (N)'
+                    END as `Arah Angin`
+                "),
+                \Illuminate\Support\Facades\DB::raw("ROUND(COALESCE(r.latitude, d.latitude, -6.830000), 6) as `Latitude`"),
+                \Illuminate\Support\Facades\DB::raw("ROUND(COALESCE(r.longitude, d.longitude, 107.910000), 6) as `Longitude`"),
+                \Illuminate\Support\Facades\DB::raw("ROUND(COALESCE(NULLIF(r.altitude_m, 0), NULLIF(d.altitude, 0), 720), 0) as `Elevasi (MDPL)`"),
+                \Illuminate\Support\Facades\DB::raw("CONCAT(COALESCE(r.battery_percent, 85), '% (', ROUND(COALESCE(r.battery_voltage, 12.4), 2), 'V)') as `Baterai & Tegangan`"),
+                \Illuminate\Support\Facades\DB::raw("ROUND(COALESCE(r.co2_sensor, 0), 1) as `CO2 (ppm)`"),
+                \Illuminate\Support\Facades\DB::raw("ROUND(COALESCE(r.ch4_ppm, 0), 1) as `CH4 (ppm)`"),
+                \Illuminate\Support\Facades\DB::raw("ROUND(COALESCE(r.no2_ppb, 0), 1) as `NO2 (ppb)`"),
+                \Illuminate\Support\Facades\DB::raw("ROUND(COALESCE(r.air_temperature_sensor, 0), 1) as `Suhu Udara (°C)`"),
+                \Illuminate\Support\Facades\DB::raw("ROUND(COALESCE(r.air_humidity_sensor, 0), 1) as `Kelembapan Udara (%)`"),
+            ])
+            ->orderBy('r.reading_time', 'desc');
 
-            $batPercent = $r->battery_percent ?? 85;
-            $batVolt = round($r->battery_voltage ?? 12.4, 2);
+        if ($bounds) {
+            $query->whereBetween('r.reading_time', $bounds);
+        }
+        if ($request->filled('device_id')) {
+            $query->where('d.device_code', $request->device_id);
+        }
 
-            return [
-                'Waktu Telemetry' => Carbon::parse($r->reading_time)->format('d/m/Y H:i:s'),
-                'ID Perangkat' => $r->device?->id ?? $r->device_id ?? '1',
-                'Kode RH Perangkat' => $r->device?->device_code ?? 'AGRISENSE-CC-001',
-                'Nama Perangkat' => $r->device?->name ?? $r->device?->device_code ?? 'NODE AGRISENSE',
-                'Kecepatan Angin (km/h)' => round($r->wind_speed_kmh ?? 0, 1),
-                'Arah Angin' => $windDirText,
-                'Latitude' => round($r->device?->latitude ?? $r->latitude ?? -6.830000, 6),
-                'Longitude' => round($r->device?->longitude ?? $r->longitude ?? 107.910000, 6),
-                'Elevasi (MDPL)' => round($r->altitude_m ?: ($r->device?->altitude ?: 720), 0),
-                'Baterai & Tegangan' => "{$batPercent}% ({$batVolt}V)",
-                'CO2 (ppm)' => round($r->co2_sensor ?? 0, 1),
-                'CH4 (ppm)' => round($r->ch4_ppm ?? 0, 1),
-                'NO2 (ppb)' => round($r->no2_ppb ?? 0, 1),
-                'Suhu Udara (°C)' => round($r->air_temperature_sensor ?? 0, 1),
-                'Kelembapan Udara (%)' => round($r->air_humidity_sensor ?? 0, 1),
-            ];
-        });
+        // Limit maks 150k baris
+        $mapped = $query->limit(150000)->get();
 
-        return $this->respondWithFormat($mapped, $format, 'raw-data', $data->count());
+        // Convert stdClass list to array format for JSON/CSV response
+        $mappedArray = collect($mapped)->map(fn($item) => (array) $item);
+
+        return $this->respondWithFormat($mappedArray, $format, 'raw-data', $mappedArray->count());
     }
 
     // Export agregasi per device
