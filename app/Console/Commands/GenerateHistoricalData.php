@@ -64,7 +64,6 @@ class GenerateHistoricalData extends Command
             Device::firstOrCreate(
                 ['device_code' => $n['device_code']],
                 [
-                    'name' => $n['name'],
                     'plot_id' => $plot->id,
                     'garden_id' => $garden->id,
                     'latitude' => $n['latitude'],
@@ -83,7 +82,7 @@ class GenerateHistoricalData extends Command
         $chunk = [];
 
         foreach ($devices as $d) {
-            $this->info("Menghasilkan telemetri untuk Node: {$d->device_code} ({$d->name})");
+            $this->info("Menghasilkan telemetri untuk Node: {$d->device_code}");
             $curr = clone $startDate;
 
             while ($curr <= $endDate) {
