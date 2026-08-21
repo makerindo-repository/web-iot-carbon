@@ -53,16 +53,16 @@ class ReportController extends Controller
                 \Illuminate\Support\Facades\DB::raw("ROUND(COALESCE(r.wind_speed_kmh, 0), 1) as `Kecepatan Angin (km/h)`"),
                 \Illuminate\Support\Facades\DB::raw("
                     CASE 
-                        WHEN ROUND(COALESCE(r.wind_direction_deg, 0) / 45) % 8 = 0 THEN 'Utara (N)'
-                        WHEN ROUND(COALESCE(r.wind_direction_deg, 0) / 45) % 8 = 1 THEN 'Timur Laut (NE)'
-                        WHEN ROUND(COALESCE(r.wind_direction_deg, 0) / 45) % 8 = 2 THEN 'Timur (E)'
-                        WHEN ROUND(COALESCE(r.wind_direction_deg, 0) / 45) % 8 = 3 THEN 'Tenggara (SE)'
-                        WHEN ROUND(COALESCE(r.wind_direction_deg, 0) / 45) % 8 = 4 THEN 'Selatan (S)'
-                        WHEN ROUND(COALESCE(r.wind_direction_deg, 0) / 45) % 8 = 5 THEN 'Barat Daya (SW)'
-                        WHEN ROUND(COALESCE(r.wind_direction_deg, 0) / 45) % 8 = 6 THEN 'Barat (W)'
-                        WHEN ROUND(COALESCE(r.wind_direction_deg, 0) / 45) % 8 = 7 THEN 'Barat Laut (NW)'
+                        WHEN ROUND(COALESCE(r.wind_direction_deg, (SELECT wind_direction_deg FROM bmkg_readings WHERE plot_id = d.plot_id ORDER BY timestamp_bmkg DESC LIMIT 1), 0) / 45) % 8 = 0 THEN 'Utara (N)'
+                        WHEN ROUND(COALESCE(r.wind_direction_deg, (SELECT wind_direction_deg FROM bmkg_readings WHERE plot_id = d.plot_id ORDER BY timestamp_bmkg DESC LIMIT 1), 0) / 45) % 8 = 1 THEN 'Timur Laut (NE)'
+                        WHEN ROUND(COALESCE(r.wind_direction_deg, (SELECT wind_direction_deg FROM bmkg_readings WHERE plot_id = d.plot_id ORDER BY timestamp_bmkg DESC LIMIT 1), 0) / 45) % 8 = 2 THEN 'Timur (E)'
+                        WHEN ROUND(COALESCE(r.wind_direction_deg, (SELECT wind_direction_deg FROM bmkg_readings WHERE plot_id = d.plot_id ORDER BY timestamp_bmkg DESC LIMIT 1), 0) / 45) % 8 = 3 THEN 'Tenggara (SE)'
+                        WHEN ROUND(COALESCE(r.wind_direction_deg, (SELECT wind_direction_deg FROM bmkg_readings WHERE plot_id = d.plot_id ORDER BY timestamp_bmkg DESC LIMIT 1), 0) / 45) % 8 = 4 THEN 'Selatan (S)'
+                        WHEN ROUND(COALESCE(r.wind_direction_deg, (SELECT wind_direction_deg FROM bmkg_readings WHERE plot_id = d.plot_id ORDER BY timestamp_bmkg DESC LIMIT 1), 0) / 45) % 8 = 5 THEN 'Barat Daya (SW)'
+                        WHEN ROUND(COALESCE(r.wind_direction_deg, (SELECT wind_direction_deg FROM bmkg_readings WHERE plot_id = d.plot_id ORDER BY timestamp_bmkg DESC LIMIT 1), 0) / 45) % 8 = 6 THEN 'Barat (W)'
+                        WHEN ROUND(COALESCE(r.wind_direction_deg, (SELECT wind_direction_deg FROM bmkg_readings WHERE plot_id = d.plot_id ORDER BY timestamp_bmkg DESC LIMIT 1), 0) / 45) % 8 = 7 THEN 'Barat Laut (NW)'
                         ELSE 'Utara (N)'
-                    END as `Arah Angin`
+                    END as `Arah Angin (Stasiun BMKG)`
                 "),
                 \Illuminate\Support\Facades\DB::raw("ROUND(COALESCE(r.latitude, d.latitude, -6.830000), 6) as `Latitude`"),
                 \Illuminate\Support\Facades\DB::raw("ROUND(COALESCE(r.longitude, d.longitude, 107.910000), 6) as `Longitude`"),
