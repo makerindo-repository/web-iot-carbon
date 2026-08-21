@@ -192,6 +192,18 @@ class NodeController extends Controller
             }
         }
 
+        $warningReasons = [];
+        if ($lastReading) {
+            if (($lastReading->co2_sensor ?? 0) > 1000) $warningReasons[] = 'CO2 Tinggi (>1000 ppm)';
+            if (($lastReading->ch4_ppm ?? 0) > 10) $warningReasons[] = 'CH4 Tinggi (>10 ppm)';
+            if (($lastReading->no2_ppb ?? 0) > 50) $warningReasons[] = 'NO2 Tinggi (>50 ppb)';
+            if (($lastReading->air_temperature_sensor ?? 25) > 35) $warningReasons[] = 'Suhu Tinggi (>35°C)';
+            if (($lastReading->air_temperature_sensor ?? 25) < 15) $warningReasons[] = 'Suhu Rendah (<15°C)';
+            if (($lastReading->air_humidity_sensor ?? 50) < 30) $warningReasons[] = 'Kelembapan Sangat Rendah (<30%)';
+            if ($batteryPercent < 20) $warningReasons[] = 'Baterai Lemah (<20%)';
+        }
+        $hasWarning = !empty($warningReasons) || $computedStatus === 'warning';
+
         return [
             'db_id' => $d->id, // Real database ID
             'id' => $d->device_code, // String code for display
@@ -202,6 +214,8 @@ class NodeController extends Controller
             'longitude' => (float) $longitude,
             'altitude' => $altitude,
             'status' => $computedStatus,
+            'has_warning' => $hasWarning,
+            'warning_reasons' => $warningReasons,
             'battery' => $batteryPercent,
             'battery_percent' => $batteryPercent,
             'battery_voltage' => round($batteryVoltage, 2),
