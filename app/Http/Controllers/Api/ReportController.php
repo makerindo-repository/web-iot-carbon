@@ -44,15 +44,12 @@ class ReportController extends Controller
         $bounds = $this->dateRangeBounds($request);
 
         $query = \Illuminate\Support\Facades\DB::table('iot_readings as r')
-            ->leftJoin('devices as d', function ($join) {
-                $join->on('r.device_id', '=', 'd.id')
-                     ->orOn('r.device_code', '=', 'd.device_code');
-            })
+            ->leftJoin('devices as d', 'r.device_id', '=', 'd.id')
             ->select([
                 \Illuminate\Support\Facades\DB::raw("DATE_FORMAT(COALESCE(r.reading_time, r.created_at), '%d/%m/%Y %H:%i:%s') as `Waktu Telemetry`"),
                 \Illuminate\Support\Facades\DB::raw("COALESCE(d.id, r.device_id, 1) as `ID Perangkat`"),
-                \Illuminate\Support\Facades\DB::raw("COALESCE(d.device_code, r.device_code, 'AGRISENSE-CC-001') as `Kode RH Perangkat`"),
-                \Illuminate\Support\Facades\DB::raw("COALESCE(d.name, d.device_code, r.device_code, 'NODE AGRISENSE') as `Nama Perangkat`"),
+                \Illuminate\Support\Facades\DB::raw("COALESCE(d.device_code, 'AGRISENSE-CC-001') as `Kode RH Perangkat`"),
+                \Illuminate\Support\Facades\DB::raw("COALESCE(d.name, d.device_code, 'NODE AGRISENSE') as `Nama Perangkat`"),
                 \Illuminate\Support\Facades\DB::raw("ROUND(COALESCE(r.wind_speed_kmh, 0), 1) as `Kecepatan Angin (km/h)`"),
                 \Illuminate\Support\Facades\DB::raw("
                     CASE 
@@ -88,7 +85,6 @@ class ReportController extends Controller
         if ($request->filled('device_id')) {
             $query->where(function ($q) use ($request) {
                 $q->where('d.device_code', $request->device_id)
-                  ->orWhere('r.device_code', $request->device_id)
                   ->orWhere('r.device_id', $request->device_id);
             });
         }
@@ -220,7 +216,6 @@ class ReportController extends Controller
         if ($request->filled('device_id')) {
             $query->where(function ($q) use ($request) {
                 $q->whereHas('device', fn ($dq) => $dq->where('device_code', $request->device_id))
-                  ->orWhere('device_code', $request->device_id)
                   ->orWhere('device_id', $request->device_id);
             });
         }
