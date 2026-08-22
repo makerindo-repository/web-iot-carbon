@@ -45,6 +45,21 @@ Route::get('/health', function () {
     }
 });
 
+// Diagnostic debug route (Public for debugging)
+Route::get('/test-model-debug', function() {
+    try {
+        $ctrl = new \App\Http\Controllers\Api\ModelPerformanceController();
+        return $ctrl->index();
+    } catch (\Throwable $e) {
+        return response()->json([
+            'error' => $e->getMessage(),
+            'file' => $e->getFile(),
+            'line' => $e->getLine(),
+            'trace' => explode("\n", $e->getTraceAsString())
+        ], 200);
+    }
+});
+
 // Authenticated routes
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
@@ -109,19 +124,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/cci', [CciController::class, 'getCci']);
     Route::get('/model-performance', [ModelPerformanceController::class, 'index']);
     Route::get('/model-performance/node/{deviceCode}', [ModelPerformanceController::class, 'perNode']);
-    Route::get('/test-model-debug', function() {
-        try {
-            $ctrl = new \App\Http\Controllers\Api\ModelPerformanceController();
-            return $ctrl->index();
-        } catch (\Throwable $e) {
-            return response()->json([
-                'error' => $e->getMessage(),
-                'file' => $e->getFile(),
-                'line' => $e->getLine(),
-                'trace' => explode("\n", $e->getTraceAsString())
-            ], 200);
-        }
-    });
+
     Route::post('/ai-insight/generate', [AiInsightController::class, 'generateInsight'])
         ->middleware('throttle:3,1');
     Route::get('/ai-insight/history', [AiInsightController::class, 'getHistory']);
