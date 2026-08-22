@@ -8,6 +8,7 @@ use App\Models\CarbonDailyStock;
 use App\Models\Device;
 use App\Models\IotReading;
 use App\Services\CarbonFluxService;
+use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
