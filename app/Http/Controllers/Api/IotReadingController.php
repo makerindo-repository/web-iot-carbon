@@ -20,6 +20,9 @@ class IotReadingController extends Controller
     // Histori sensor terbaru
     public function getReadings(Request $request)
     {
+        // Naikkan batas memori untuk menghindari 502 Bad Gateway akibat alokasi memori Eloquent
+        ini_set('memory_limit', '512M');
+
         $query = IotReading::with(['device', 'cciAnalytic'])->orderBy('reading_time', 'desc');
 
         if ($request->has('device_id')) {
@@ -29,8 +32,8 @@ class IotReadingController extends Controller
             $query->whereBetween('reading_time', [$request->start_date, $request->end_date.' 23:59:59']);
         }
 
-        // Cap 50000 agar data monitoring multi-node berminggu-minggu terangkum penuh tanpa terpotong.
-        $limit = min((int) $request->get('limit', 100), 50000);
+        // Cap maksimal di 5000 record (sangat cukup untuk data 30 hari node tunggal) guna mencegah crash memori PHP-FPM.
+        $limit = min((int) $request->get('limit', 100), 5000);
         $readings = $query->limit($limit)->get();
 
         return response()->json($readings->map(function ($r) {
