@@ -126,7 +126,7 @@ class ReportController extends Controller
                 'Min CO2' => round($readings->min('co2_sensor'), 1),
                 'Max CO2' => round($readings->max('co2_sensor'), 1),
                 'Rata-rata CH4 (ppm)' => round($readings->avg('ch4_ppm'), 1),
-                'Rata-rata NO2 (ppb)' => round($readings->avg('no2_ppb'), 1),
+                'Rata-rata N₂O (ppb)' => round($readings->avg('no2_ppb'), 1),
                 'Rata-rata Suhu (°C)' => round($readings->avg('air_temperature_sensor'), 1),
                 'Rata-rata Kelembapan (%)' => round($readings->avg('air_humidity_sensor'), 1),
                 'Rata-rata Kecepatan Angin (km/h)' => round($readings->avg('wind_speed_kmh'), 1),
