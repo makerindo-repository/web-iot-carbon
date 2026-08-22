@@ -44,12 +44,15 @@ class ReportController extends Controller
         $bounds = $this->dateRangeBounds($request);
 
         $query = \Illuminate\Support\Facades\DB::table('iot_readings as r')
-            ->leftJoin('devices as d', 'r.device_id', '=', 'd.id')
+            ->leftJoin('devices as d', function ($join) {
+                $join->on('r.device_id', '=', 'd.id')
+                     ->orOn('r.device_code', '=', 'd.device_code');
+            })
             ->select([
-                \Illuminate\Support\Facades\DB::raw("DATE_FORMAT(r.reading_time, '%d/%m/%Y %H:%i:%s') as `Waktu Telemetry`"),
+                \Illuminate\Support\Facades\DB::raw("DATE_FORMAT(COALESCE(r.reading_time, r.created_at), '%d/%m/%Y %H:%i:%s') as `Waktu Telemetry`"),
                 \Illuminate\Support\Facades\DB::raw("COALESCE(d.id, r.device_id, 1) as `ID Perangkat`"),
-                \Illuminate\Support\Facades\DB::raw("COALESCE(d.device_code, 'AGRISENSE-CC-001') as `Kode RH Perangkat`"),
-                \Illuminate\Support\Facades\DB::raw("COALESCE(d.device_code, 'NODE AGRISENSE') as `Nama Perangkat`"),
+                \Illuminate\Support\Facades\DB::raw("COALESCE(d.device_code, r.device_code, 'AGRISENSE-CC-001') as `Kode RH Perangkat`"),
+                \Illuminate\Support\Facades\DB::raw("COALESCE(d.name, d.device_code, r.device_code, 'NODE AGRISENSE') as `Nama Perangkat`"),
                 \Illuminate\Support\Facades\DB::raw("ROUND(COALESCE(r.wind_speed_kmh, 0), 1) as `Kecepatan Angin (km/h)`"),
                 \Illuminate\Support\Facades\DB::raw("
                     CASE 
@@ -70,11 +73,11 @@ class ReportController extends Controller
                 \Illuminate\Support\Facades\DB::raw("CONCAT(COALESCE(r.battery_percent, 85), '% (', ROUND(COALESCE(r.battery_voltage, 12.4), 2), 'V)') as `Baterai & Tegangan`"),
                 \Illuminate\Support\Facades\DB::raw("ROUND(COALESCE(r.co2_sensor, 0), 1) as `CO2 (ppm)`"),
                 \Illuminate\Support\Facades\DB::raw("ROUND(COALESCE(r.ch4_ppm, 0), 1) as `CH4 (ppm)`"),
-                \Illuminate\Support\Facades\DB::raw("ROUND(COALESCE(r.no2_ppb, 0), 1) as `NO2 (ppb)`"),
+                \Illuminate\Support\Facades\DB::raw("ROUND(COALESCE(r.no2_ppb, 0), 1) as `N₂O (ppb)`"),
                 \Illuminate\Support\Facades\DB::raw("ROUND(COALESCE(r.air_temperature_sensor, 0), 1) as `Suhu Udara (°C)`"),
                 \Illuminate\Support\Facades\DB::raw("ROUND(COALESCE(r.air_humidity_sensor, 0), 1) as `Kelembapan Udara (%)`"),
             ])
-            ->orderBy('r.reading_time', 'desc');
+            ->orderBy(\Illuminate\Support\Facades\DB::raw("COALESCE(r.reading_time, r.created_at)"), 'desc');
 
         if ($bounds) {
             $query->where(function ($q) use ($bounds) {
