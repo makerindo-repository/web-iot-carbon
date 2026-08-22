@@ -241,8 +241,8 @@ class ModelPerformanceController extends Controller
             ->get()
             ->keyBy(function ($reading) {
                 // Key by hour-rounded timestamp for matching
-                $time = $reading->reading_time ?? $reading->created_at;
-                return $time ? $time->format('Y-m-d H:00:00') : now()->format('Y-m-d H:00:00');
+                $time = Carbon::parse($reading->reading_time ?? $reading->created_at ?? now());
+                return $time->format('Y-m-d H:00:00');
             });
 
         // 3. Group forecasts by model+target+horizon, compute metrics
@@ -263,7 +263,7 @@ class ModelPerformanceController extends Controller
                 if (!$forecast->predicted_for) {
                     continue;
                 }
-                $predictedForKey = $forecast->predicted_for->format('Y-m-d H:00:00');
+                $predictedForKey = Carbon::parse($forecast->predicted_for)->format('Y-m-d H:00:00');
                 $reading = $readings->get($predictedForKey);
 
                 if (! $reading) {
@@ -293,7 +293,7 @@ class ModelPerformanceController extends Controller
                         ?? $reading->device?->landPlot?->c_max_gc_m2
                         ?? CarbonFluxService::estimateCMax($socBaseline)
                     );
-                    $readingDate = ($reading->reading_time ?? $reading->created_at ?? now())->toDateString();
+                    $readingDate = Carbon::parse($reading->reading_time ?? $reading->created_at ?? now())->toDateString();
                     $biomassAcc = (float) (CarbonDailyStock::where('device_id', $device->id)
                         ->whereDate('stock_date', '<=', $readingDate)
                         ->orderByDesc('stock_date')
@@ -374,138 +374,146 @@ class ModelPerformanceController extends Controller
      */
     private function getGlobalEvaluation(int $days = 30): array
     {
-        $since = now()->subDays($days);
+        try {
+            $since = now()->subDays($days);
 
-        $forecasts = AiForecastResult::where('status', 'completed')
-            ->where('predicted_for', '>=', $since)
-            ->orderBy('predicted_for', 'desc')
-            ->get();
+            $forecasts = AiForecastResult::where('status', 'completed')
+                ->where('predicted_for', '>=', $since)
+                ->orderBy('predicted_for', 'desc')
+                ->get();
 
-        $readings = IotReading::with(['device.landPlot', 'landPlot'])
-            ->where('reading_time', '>=', $since)
-            ->get()
-            ->keyBy(function ($reading) {
-                $time = $reading->reading_time ?? $reading->created_at;
-                $timeStr = $time ? $time->format('Y-m-d H:00:00') : now()->format('Y-m-d H:00:00');
-                return $reading->device_id.'|'.$timeStr;
+            $readings = IotReading::with(['device.landPlot', 'landPlot'])
+                ->where('reading_time', '>=', $since)
+                ->get()
+                ->keyBy(function ($reading) {
+                    $time = Carbon::parse($reading->reading_time ?? $reading->created_at ?? now());
+                    return $reading->device_id.'|'.$time->format('Y-m-d H:00:00');
+                });
+
+            $groups = $forecasts->groupBy(function ($f) {
+                return "{$f->model_used}|{$f->target_metric}|{$f->horizon_hours}";
             });
 
-        $groups = $forecasts->groupBy(function ($f) {
-            return "{$f->model_used}|{$f->target_metric}|{$f->horizon_hours}";
-        });
+            $evaluation = [];
 
-        $evaluation = [];
+            foreach ($groups as $key => $group) {
+                [$model, $target, $horizon] = explode('|', $key);
 
-        foreach ($groups as $key => $group) {
-            [$model, $target, $horizon] = explode('|', $key);
+                $predicted = [];
+                $actual = [];
 
-            $predicted = [];
-            $actual = [];
+                foreach ($group as $forecast) {
+                    if (!$forecast->predicted_for) {
+                        continue;
+                    }
+                    $predictedForKey = $forecast->device_id.'|'.Carbon::parse($forecast->predicted_for)->format('Y-m-d H:00:00');
+                    $reading = $readings->get($predictedForKey);
 
-            foreach ($group as $forecast) {
-                if (!$forecast->predicted_for) {
+                    if (! $reading) {
+                        continue;
+                    }
+
+                    $actualValue = null;
+                    $targetLower = strtolower($target);
+
+                    if (str_contains($targetLower, 'moisture') || str_contains($targetLower, 'soil_moisture')) {
+                        $actualValue = $reading->soil_moisture;
+                    } elseif (str_contains($targetLower, 'ph') || $target === 'pH') {
+                        $actualValue = $reading->soil_ph;
+                    } elseif (str_contains($targetLower, 'co2') || str_contains($targetLower, 'co₂')) {
+                        $actualValue = $reading->co2_sensor;
+                    } elseif (str_contains($targetLower, 'carbon_flux') || str_contains($targetLower, 'flux')) {
+                        $actualValue = $reading->carbon_flux;
+                    } elseif (str_contains($targetLower, 'carbon potential') || str_contains($targetLower, 'cps')) {
+                        $socBaseline = (float) (
+                            $reading->landPlot?->soc_baseline_gc_m2
+                            ?? $reading->device?->landPlot?->soc_baseline_gc_m2
+                            ?? CarbonFluxService::DEFAULT_SOC_BASELINE_GC_M2
+                        );
+                        $cMax = (float) (
+                            $reading->landPlot?->c_max_gc_m2
+                            ?? $reading->device?->landPlot?->c_max_gc_m2
+                            ?? CarbonFluxService::estimateCMax($socBaseline)
+                        );
+                        $rDate = Carbon::parse($reading->reading_time ?? $reading->created_at ?? now())->toDateString();
+                        $biomassAcc = (float) (CarbonDailyStock::where('device_id', $reading->device_id)
+                            ->whereDate('stock_date', '<=', $rDate)
+                            ->orderByDesc('stock_date')
+                            ->value('cumulative_npp_gc_m2') ?? 0);
+                        $actualValue = CarbonFluxService::calculateCPS($socBaseline + $biomassAcc, $cMax);
+                    } elseif (str_contains($targetLower, 'soil_temp') || str_contains($targetLower, 'soil_temperature')) {
+                        $actualValue = $reading->soil_temperature;
+                    } elseif (str_contains($targetLower, 'air_temp') || str_contains($targetLower, 'temperature')) {
+                        $actualValue = $reading->air_temperature_sensor;
+                    } elseif (str_contains($targetLower, 'humid') || str_contains($targetLower, 'humidity')) {
+                        $actualValue = $reading->air_humidity_sensor;
+                    } elseif (str_contains($targetLower, 'light') || str_contains($targetLower, 'lux')) {
+                        $actualValue = $reading->light_sensor;
+                    } elseif (str_contains($targetLower, 'nitrogen') || $target === 'N') {
+                        $actualValue = $reading->soil_n;
+                    } elseif (str_contains($targetLower, 'phosphorus') || $target === 'P') {
+                        $actualValue = $reading->soil_p;
+                    } elseif (str_contains($targetLower, 'potassium') || str_contains($targetLower, 'kalium') || $target === 'K') {
+                        $actualValue = $reading->soil_k;
+                    } elseif (str_contains($targetLower, 'salinity') || str_contains($targetLower, 'ec')) {
+                        $actualValue = $reading->soil_ec;
+                    }
+
+                    if ($actualValue !== null && $forecast->predicted_value !== null) {
+                        $predicted[] = (float) $forecast->predicted_value;
+                        $actual[] = (float) $actualValue;
+                    }
+                }
+
+                $metrics = $this->computeMetrics($predicted, $actual);
+
+                // Filter out obsolete targets
+                $validTargets = ['CO2 (ppm)', 'Carbon Flux (NEE AgriSense)', 'Carbon Potential Score'];
+                if (!in_array($target, $validTargets)) {
                     continue;
                 }
-                $predictedForKey = $forecast->device_id.'|'.$forecast->predicted_for->format('Y-m-d H:00:00');
-                $reading = $readings->get($predictedForKey);
 
-                if (! $reading) {
-                    continue;
-                }
-
-                $actualValue = null;
-                $targetLower = strtolower($target);
-
-                if (str_contains($targetLower, 'moisture') || str_contains($targetLower, 'soil_moisture')) {
-                    $actualValue = $reading->soil_moisture;
-                } elseif (str_contains($targetLower, 'ph') || $target === 'pH') {
-                    $actualValue = $reading->soil_ph;
-                } elseif (str_contains($targetLower, 'co2') || str_contains($targetLower, 'co₂')) {
-                    $actualValue = $reading->co2_sensor;
-                } elseif (str_contains($targetLower, 'carbon_flux') || str_contains($targetLower, 'flux')) {
-                    $actualValue = $reading->carbon_flux;
-                } elseif (str_contains($targetLower, 'carbon potential') || str_contains($targetLower, 'cps')) {
-                    $socBaseline = (float) (
-                        $reading->landPlot?->soc_baseline_gc_m2
-                        ?? $reading->device?->landPlot?->soc_baseline_gc_m2
-                        ?? CarbonFluxService::DEFAULT_SOC_BASELINE_GC_M2
-                    );
-                    $cMax = (float) (
-                        $reading->landPlot?->c_max_gc_m2
-                        ?? $reading->device?->landPlot?->c_max_gc_m2
-                        ?? CarbonFluxService::estimateCMax($socBaseline)
-                    );
-                    $rDate = ($reading->reading_time ?? $reading->created_at ?? now())->toDateString();
-                    $biomassAcc = (float) (CarbonDailyStock::where('device_id', $reading->device_id)
-                        ->whereDate('stock_date', '<=', $rDate)
-                        ->orderByDesc('stock_date')
-                        ->value('cumulative_npp_gc_m2') ?? 0);
-                    $actualValue = CarbonFluxService::calculateCPS($socBaseline + $biomassAcc, $cMax);
-                } elseif (str_contains($targetLower, 'soil_temp') || str_contains($targetLower, 'soil_temperature')) {
-                    $actualValue = $reading->soil_temperature;
-                } elseif (str_contains($targetLower, 'air_temp') || str_contains($targetLower, 'temperature')) {
-                    $actualValue = $reading->air_temperature_sensor;
-                } elseif (str_contains($targetLower, 'humid') || str_contains($targetLower, 'humidity')) {
-                    $actualValue = $reading->air_humidity_sensor;
-                } elseif (str_contains($targetLower, 'light') || str_contains($targetLower, 'lux')) {
-                    $actualValue = $reading->light_sensor;
-                } elseif (str_contains($targetLower, 'nitrogen') || $target === 'N') {
-                    $actualValue = $reading->soil_n;
-                } elseif (str_contains($targetLower, 'phosphorus') || $target === 'P') {
-                    $actualValue = $reading->soil_p;
-                } elseif (str_contains($targetLower, 'potassium') || str_contains($targetLower, 'kalium') || $target === 'K') {
-                    $actualValue = $reading->soil_k;
-                } elseif (str_contains($targetLower, 'salinity') || str_contains($targetLower, 'ec')) {
-                    $actualValue = $reading->soil_ec;
-                }
-
-                if ($actualValue !== null && $forecast->predicted_value !== null) {
-                    $predicted[] = (float) $forecast->predicted_value;
-                    $actual[] = (float) $actualValue;
+                if ($metrics) {
+                    $evaluation[] = [
+                        'model' => strtoupper($model) === 'XGBOOST' ? 'XGBoost' : strtoupper($model),
+                        'target' => $target,
+                        'horizon_hours' => (int) $horizon,
+                        'matched_pairs' => count($predicted),
+                        'total_predictions' => $group->count(),
+                        'MAE' => $metrics['MAE'],
+                        'RMSE' => $metrics['RMSE'],
+                        'MAPE_pct' => $metrics['MAPE_pct'],
+                        'R2' => $metrics['R2'],
+                    ];
                 }
             }
 
-            $metrics = $this->computeMetrics($predicted, $actual);
+            $comparisonGroups = collect($evaluation)
+                ->groupBy(fn ($row) => ($row['target'] ?? 'Unknown').'|'.(int) ($row['horizon_hours'] ?? 0))
+                ->map(function ($rows) {
+                    $first = $rows->first();
 
-            // Filter out obsolete targets (Soil Moisture, pH, etc.) so they don't show up in the UI
-            $validTargets = ['CO2 (ppm)', 'Carbon Flux (NEE AgriSense)', 'Carbon Potential Score'];
-            if (!in_array($target, $validTargets)) {
-                continue;
-            }
+                    return [
+                        'target' => $first['target'] ?? 'Unknown',
+                        'horizon_hours' => (int) ($first['horizon_hours'] ?? 0),
+                        'rows' => $rows->values()->all(),
+                    ];
+                })
+                ->values()
+                ->all();
 
-            if ($metrics) {
-                $evaluation[] = [
-                    'model' => strtoupper($model) === 'XGBOOST' ? 'XGBoost' : strtoupper($model),
-                    'target' => $target,
-                    'horizon_hours' => (int) $horizon,
-                    'matched_pairs' => count($predicted),
-                    'total_predictions' => $group->count(),
-                    'MAE' => $metrics['MAE'],
-                    'RMSE' => $metrics['RMSE'],
-                    'MAPE_pct' => $metrics['MAPE_pct'],
-                    'R2' => $metrics['R2'],
-                ];
-            }
+            return [
+                'comparison_rows' => $evaluation,
+                'comparison_groups' => $comparisonGroups,
+            ];
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('getGlobalEvaluation error: '.$e->getMessage());
+
+            return [
+                'comparison_rows' => [],
+                'comparison_groups' => [],
+            ];
         }
-
-        $comparisonGroups = collect($evaluation)
-            ->groupBy(fn ($row) => ($row['target'] ?? 'Unknown').'|'.(int) ($row['horizon_hours'] ?? 0))
-            ->map(function ($rows) {
-                $first = $rows->first();
-
-                return [
-                    'target' => $first['target'] ?? 'Unknown',
-                    'horizon_hours' => (int) ($first['horizon_hours'] ?? 0),
-                    'rows' => $rows->values()->all(),
-                ];
-            })
-            ->values()
-            ->all();
-
-        return [
-            'comparison_rows' => $evaluation,
-            'comparison_groups' => $comparisonGroups,
-        ];
     }
 
     private function computeMetrics(array $predicted, array $actual): ?array
