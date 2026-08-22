@@ -26,14 +26,16 @@ use Illuminate\Http\Request;
  */
 class ModelPerformanceController extends Controller
 {
-    /**
-     * Path relatif ke bundle model dari root project.
-     */
-    private string $bundlePath;
+    private ?string $bundlePath = null;
 
     public function __construct()
     {
-        $this->bundlePath = rtrim((string) config('services.ai_model_bundle.path'), DIRECTORY_SEPARATOR);
+        try {
+            $path = config('services.ai_model_bundle.path') ?? base_path('../docs/deploy_model_bundle');
+            $this->bundlePath = rtrim((string) $path, DIRECTORY_SEPARATOR);
+        } catch (\Throwable $e) {
+            $this->bundlePath = base_path('../docs/deploy_model_bundle');
+        }
     }
 
     /**
@@ -347,8 +349,8 @@ class ModelPerformanceController extends Controller
                 'predicted_value' => (float) $f->predicted_value,
                 'current_value' => $f->current_value !== null ? (float) $f->current_value : null,
                 'method' => (int) $f->horizon_hours === 0 ? 'model_estimate' : 'calibrated_projection',
-                'predicted_for' => $f->predicted_for->toIso8601String(),
-                'created_at' => $f->created_at->toIso8601String(),
+                'predicted_for' => $f->predicted_for ? $f->predicted_for->toIso8601String() : now()->toIso8601String(),
+                'created_at' => $f->created_at ? $f->created_at->toIso8601String() : now()->toIso8601String(),
             ];
         })->values();
 

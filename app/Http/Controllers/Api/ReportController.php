@@ -242,10 +242,10 @@ class ReportController extends Controller
     private function dateRangeBounds(Request $request): ?array
     {
         $startDate = $request->filled('start_date')
-            ? Carbon::parse($request->start_date)->startOfDay()
+            ? Carbon::parse($request->start_date)->subDay()->startOfDay()
             : null;
         $endDate = $request->filled('end_date')
-            ? Carbon::parse($request->end_date)->endOfDay()
+            ? Carbon::parse($request->end_date)->addDay()->endOfDay()
             : null;
 
         if (! $startDate && ! $endDate) {
@@ -253,7 +253,7 @@ class ReportController extends Controller
         }
 
         $startDate ??= Carbon::create(1970, 1, 1)->startOfDay();
-        $endDate ??= now()->endOfDay();
+        $endDate ??= now()->addDay()->endOfDay();
 
         if ($startDate->greaterThan($endDate)) {
             [$startDate, $endDate] = [$endDate->copy()->startOfDay(), $startDate->copy()->endOfDay()];
