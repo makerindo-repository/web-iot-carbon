@@ -34,10 +34,14 @@ class IotReadingController extends Controller
         $readings = $query->limit($limit)->get();
 
         return response()->json($readings->map(function ($r) {
+            $deviceCode = $r->device->device_code ?? $r->device_code ?? $r->device_id ?? 'UNKNOWN';
             return [
+                'id' => $r->id,
                 'message_id' => $r->message_id ?? 'MSG-'.$r->id,
-                'device_id' => $r->device->device_code ?? 'UNKNOWN',
-                'timestamp' => Carbon::parse($r->reading_time)->toIso8601String(),
+                'device_id' => $deviceCode,
+                'device_code' => $deviceCode,
+                'reading_time' => $r->reading_time,
+                'timestamp' => Carbon::parse($r->reading_time ?? $r->created_at ?? now())->toIso8601String(),
                 'location' => [
                     'latitude' => (float) ($r->latitude ?? $r->device->latitude ?? 0),
                     'longitude' => (float) ($r->longitude ?? $r->device->longitude ?? 0),
