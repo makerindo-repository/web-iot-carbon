@@ -80,22 +80,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::put('/komoditi/{id}', [KomoditiController::class, 'update'])->middleware('throttle:30,1');
         Route::delete('/komoditi/{id}', [KomoditiController::class, 'destroy']);
 
-        // Model Performance (read)
-        Route::get('/model-performance', [ModelPerformanceController::class, 'index']);
-        Route::get('/model-performance/node/{deviceCode}', [ModelPerformanceController::class, 'perNode']);
-        Route::get('/test-model-debug', function() {
-            try {
-                $ctrl = new \App\Http\Controllers\Api\ModelPerformanceController();
-                return $ctrl->index();
-            } catch (\Throwable $e) {
-                return response()->json([
-                    'error' => $e->getMessage(),
-                    'file' => $e->getFile(),
-                    'line' => $e->getLine(),
-                    'trace' => explode("\n", $e->getTraceAsString())
-                ], 200);
-            }
-        });
+
 
         // About cards (write)
         Route::get('/about-cards/admin', [AboutCardController::class, 'adminIndex']);
@@ -122,6 +107,21 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/komoditi/{id}', [KomoditiController::class, 'show']);
     Route::get('/bmkg', [BmkgController::class, 'getBmkg']);
     Route::get('/cci', [CciController::class, 'getCci']);
+    Route::get('/model-performance', [ModelPerformanceController::class, 'index']);
+    Route::get('/model-performance/node/{deviceCode}', [ModelPerformanceController::class, 'perNode']);
+    Route::get('/test-model-debug', function() {
+        try {
+            $ctrl = new \App\Http\Controllers\Api\ModelPerformanceController();
+            return $ctrl->index();
+        } catch (\Throwable $e) {
+            return response()->json([
+                'error' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => explode("\n", $e->getTraceAsString())
+            ], 200);
+        }
+    });
     Route::post('/ai-insight/generate', [AiInsightController::class, 'generateInsight'])
         ->middleware('throttle:3,1');
     Route::get('/ai-insight/history', [AiInsightController::class, 'getHistory']);
