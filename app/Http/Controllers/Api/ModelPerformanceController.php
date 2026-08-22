@@ -278,8 +278,9 @@ class ModelPerformanceController extends Controller
                         ?? $reading->device?->landPlot?->c_max_gc_m2
                         ?? CarbonFluxService::estimateCMax($socBaseline)
                     );
+                    $readingDate = ($reading->reading_time ?? $reading->created_at ?? now())->toDateString();
                     $biomassAcc = (float) (CarbonDailyStock::where('device_id', $device->id)
-                        ->whereDate('stock_date', '<=', $reading->reading_time->toDateString())
+                        ->whereDate('stock_date', '<=', $readingDate)
                         ->orderByDesc('stock_date')
                         ->value('cumulative_npp_gc_m2') ?? 0);
                     $actualValue = CarbonFluxService::calculateCPS($socBaseline + $biomassAcc, $cMax);
@@ -419,8 +420,9 @@ class ModelPerformanceController extends Controller
                         ?? $reading->device?->landPlot?->c_max_gc_m2
                         ?? CarbonFluxService::estimateCMax($socBaseline)
                     );
+                    $rDate = ($reading->reading_time ?? $reading->created_at ?? now())->toDateString();
                     $biomassAcc = (float) (CarbonDailyStock::where('device_id', $reading->device_id)
-                        ->whereDate('stock_date', '<=', $reading->reading_time->toDateString())
+                        ->whereDate('stock_date', '<=', $rDate)
                         ->orderByDesc('stock_date')
                         ->value('cumulative_npp_gc_m2') ?? 0);
                     $actualValue = CarbonFluxService::calculateCPS($socBaseline + $biomassAcc, $cMax);
