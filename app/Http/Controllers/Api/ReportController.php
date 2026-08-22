@@ -58,56 +58,61 @@ class ReportController extends Controller
     // Export raw sensor data
     private function exportRawData(Request $request, string $format)
     {
-        $bounds = $this->dateRangeBounds($request);
+        try {
+            $bounds = $this->dateRangeBounds($request);
 
-        $query = \Illuminate\Support\Facades\DB::table('iot_readings as r')
-            ->leftJoin('devices as d', 'r.device_id', '=', 'd.id')
-            ->select([
-                \Illuminate\Support\Facades\DB::raw("DATE_FORMAT(COALESCE(r.reading_time, r.created_at), '%d/%m/%Y %H:%i:%s') as `Waktu Telemetry`"),
-                \Illuminate\Support\Facades\DB::raw("COALESCE(d.id, r.device_id, 1) as `ID Perangkat`"),
-                \Illuminate\Support\Facades\DB::raw("COALESCE(d.device_code, 'AGRISENSE-CC-001') as `Kode RH Perangkat`"),
-                \Illuminate\Support\Facades\DB::raw("COALESCE(d.name, d.device_code, 'NODE AGRISENSE') as `Nama Perangkat`"),
-                \Illuminate\Support\Facades\DB::raw("ROUND(COALESCE(r.wind_speed_kmh, 0), 1) as `Kecepatan Angin (km/h)`"),
-                \Illuminate\Support\Facades\DB::raw("
-                    CASE 
-                        WHEN ROUND(COALESCE(r.wind_direction_deg, (SELECT wind_direction_deg FROM bmkg_readings WHERE plot_id = d.plot_id ORDER BY timestamp_bmkg DESC LIMIT 1), 0) / 45) % 8 = 0 THEN 'Utara (N)'
-                        WHEN ROUND(COALESCE(r.wind_direction_deg, (SELECT wind_direction_deg FROM bmkg_readings WHERE plot_id = d.plot_id ORDER BY timestamp_bmkg DESC LIMIT 1), 0) / 45) % 8 = 1 THEN 'Timur Laut (NE)'
-                        WHEN ROUND(COALESCE(r.wind_direction_deg, (SELECT wind_direction_deg FROM bmkg_readings WHERE plot_id = d.plot_id ORDER BY timestamp_bmkg DESC LIMIT 1), 0) / 45) % 8 = 2 THEN 'Timur (E)'
-                        WHEN ROUND(COALESCE(r.wind_direction_deg, (SELECT wind_direction_deg FROM bmkg_readings WHERE plot_id = d.plot_id ORDER BY timestamp_bmkg DESC LIMIT 1), 0) / 45) % 8 = 3 THEN 'Tenggara (SE)'
-                        WHEN ROUND(COALESCE(r.wind_direction_deg, (SELECT wind_direction_deg FROM bmkg_readings WHERE plot_id = d.plot_id ORDER BY timestamp_bmkg DESC LIMIT 1), 0) / 45) % 8 = 4 THEN 'Selatan (S)'
-                        WHEN ROUND(COALESCE(r.wind_direction_deg, (SELECT wind_direction_deg FROM bmkg_readings WHERE plot_id = d.plot_id ORDER BY timestamp_bmkg DESC LIMIT 1), 0) / 45) % 8 = 5 THEN 'Barat Daya (SW)'
-                        WHEN ROUND(COALESCE(r.wind_direction_deg, (SELECT wind_direction_deg FROM bmkg_readings WHERE plot_id = d.plot_id ORDER BY timestamp_bmkg DESC LIMIT 1), 0) / 45) % 8 = 6 THEN 'Barat (W)'
-                        WHEN ROUND(COALESCE(r.wind_direction_deg, (SELECT wind_direction_deg FROM bmkg_readings WHERE plot_id = d.plot_id ORDER BY timestamp_bmkg DESC LIMIT 1), 0) / 45) % 8 = 7 THEN 'Barat Laut (NW)'
-                        ELSE 'Utara (N)'
-                    END as `Arah Angin (Stasiun BMKG)`
-                "),
-                \Illuminate\Support\Facades\DB::raw("ROUND(COALESCE(r.latitude, d.latitude, -6.830000), 6) as `Latitude`"),
-                \Illuminate\Support\Facades\DB::raw("ROUND(COALESCE(r.longitude, d.longitude, 107.910000), 6) as `Longitude`"),
-                \Illuminate\Support\Facades\DB::raw("ROUND(COALESCE(NULLIF(r.altitude_m, 0), NULLIF(d.altitude, 0), 720), 0) as `Elevasi (MDPL)`"),
-                \Illuminate\Support\Facades\DB::raw("CONCAT(COALESCE(r.battery_percent, 85), '% (', ROUND(COALESCE(r.battery_voltage, 12.4), 2), 'V)') as `Baterai & Tegangan`"),
-                \Illuminate\Support\Facades\DB::raw("ROUND(COALESCE(r.co2_sensor, 0), 1) as `CO2 (ppm)`"),
-                \Illuminate\Support\Facades\DB::raw("ROUND(COALESCE(r.ch4_ppm, 0), 1) as `CH4 (ppm)`"),
-                \Illuminate\Support\Facades\DB::raw("ROUND(COALESCE(r.no2_ppb, 0), 1) as `N₂O (ppb)`"),
-                \Illuminate\Support\Facades\DB::raw("ROUND(COALESCE(r.air_temperature_sensor, 0), 1) as `Suhu Udara (°C)`"),
-                \Illuminate\Support\Facades\DB::raw("ROUND(COALESCE(r.air_humidity_sensor, 0), 1) as `Kelembapan Udara (%)`"),
-            ])
-            ->orderBy(\Illuminate\Support\Facades\DB::raw("COALESCE(r.reading_time, r.created_at)"), 'desc');
+            $query = \Illuminate\Support\Facades\DB::table('iot_readings as r')
+                ->leftJoin('devices as d', 'r.device_id', '=', 'd.id')
+                ->select([
+                    \Illuminate\Support\Facades\DB::raw("DATE_FORMAT(COALESCE(r.reading_time, r.created_at), '%d/%m/%Y %H:%i:%s') as `Waktu Telemetry`"),
+                    \Illuminate\Support\Facades\DB::raw("COALESCE(d.id, r.device_id, 1) as `ID Perangkat`"),
+                    \Illuminate\Support\Facades\DB::raw("COALESCE(d.device_code, 'AGRISENSE-CC-001') as `Kode RH Perangkat`"),
+                    \Illuminate\Support\Facades\DB::raw("COALESCE(d.name, d.device_code, 'NODE AGRISENSE') as `Nama Perangkat`"),
+                    \Illuminate\Support\Facades\DB::raw("ROUND(COALESCE(r.wind_speed_kmh, 0), 1) as `Kecepatan Angin (km/h)`"),
+                    \Illuminate\Support\Facades\DB::raw("
+                        CASE 
+                            WHEN ROUND(COALESCE(r.wind_direction_deg, (SELECT wind_direction_deg FROM bmkg_readings WHERE plot_id = d.plot_id ORDER BY timestamp_bmkg DESC LIMIT 1), 0) / 45) % 8 = 0 THEN 'Utara (N)'
+                            WHEN ROUND(COALESCE(r.wind_direction_deg, (SELECT wind_direction_deg FROM bmkg_readings WHERE plot_id = d.plot_id ORDER BY timestamp_bmkg DESC LIMIT 1), 0) / 45) % 8 = 1 THEN 'Timur Laut (NE)'
+                            WHEN ROUND(COALESCE(r.wind_direction_deg, (SELECT wind_direction_deg FROM bmkg_readings WHERE plot_id = d.plot_id ORDER BY timestamp_bmkg DESC LIMIT 1), 0) / 45) % 8 = 2 THEN 'Timur (E)'
+                            WHEN ROUND(COALESCE(r.wind_direction_deg, (SELECT wind_direction_deg FROM bmkg_readings WHERE plot_id = d.plot_id ORDER BY timestamp_bmkg DESC LIMIT 1), 0) / 45) % 8 = 3 THEN 'Tenggara (SE)'
+                            WHEN ROUND(COALESCE(r.wind_direction_deg, (SELECT wind_direction_deg FROM bmkg_readings WHERE plot_id = d.plot_id ORDER BY timestamp_bmkg DESC LIMIT 1), 0) / 45) % 8 = 4 THEN 'Selatan (S)'
+                            WHEN ROUND(COALESCE(r.wind_direction_deg, (SELECT wind_direction_deg FROM bmkg_readings WHERE plot_id = d.plot_id ORDER BY timestamp_bmkg DESC LIMIT 1), 0) / 45) % 8 = 5 THEN 'Barat Daya (SW)'
+                            WHEN ROUND(COALESCE(r.wind_direction_deg, (SELECT wind_direction_deg FROM bmkg_readings WHERE plot_id = d.plot_id ORDER BY timestamp_bmkg DESC LIMIT 1), 0) / 45) % 8 = 6 THEN 'Barat (W)'
+                            WHEN ROUND(COALESCE(r.wind_direction_deg, (SELECT wind_direction_deg FROM bmkg_readings WHERE plot_id = d.plot_id ORDER BY timestamp_bmkg DESC LIMIT 1), 0) / 45) % 8 = 7 THEN 'Barat Laut (NW)'
+                            ELSE 'Utara (N)'
+                        END as `Arah Angin (Stasiun BMKG)`
+                    "),
+                    \Illuminate\Support\Facades\DB::raw("ROUND(COALESCE(r.latitude, d.latitude, -6.830000), 6) as `Latitude`"),
+                    \Illuminate\Support\Facades\DB::raw("ROUND(COALESCE(r.longitude, d.longitude, 107.910000), 6) as `Longitude`"),
+                    \Illuminate\Support\Facades\DB::raw("ROUND(COALESCE(NULLIF(r.altitude_m, 0), NULLIF(d.altitude, 0), 720), 0) as `Elevasi (MDPL)`"),
+                    \Illuminate\Support\Facades\DB::raw("CONCAT(COALESCE(r.battery_percent, 85), '% (', ROUND(COALESCE(r.battery_voltage, 12.4), 2), 'V)') as `Baterai & Tegangan`"),
+                    \Illuminate\Support\Facades\DB::raw("ROUND(COALESCE(r.co2_sensor, 0), 1) as `CO2 (ppm)`"),
+                    \Illuminate\Support\Facades\DB::raw("ROUND(COALESCE(r.ch4_ppm, 0), 1) as `CH4 (ppm)`"),
+                    \Illuminate\Support\Facades\DB::raw("ROUND(COALESCE(r.no2_ppb, 0), 1) as `N₂O (ppb)`"),
+                    \Illuminate\Support\Facades\DB::raw("ROUND(COALESCE(r.air_temperature_sensor, 0), 1) as `Suhu Udara (°C)`"),
+                    \Illuminate\Support\Facades\DB::raw("ROUND(COALESCE(r.air_humidity_sensor, 0), 1) as `Kelembapan Udara (%)`"),
+                ])
+                ->orderBy(\Illuminate\Support\Facades\DB::raw("COALESCE(r.reading_time, r.created_at)"), 'desc');
 
-        if ($bounds) {
-            $query->where(function ($q) use ($bounds) {
-                $q->whereBetween('r.reading_time', $bounds)
-                  ->orWhereBetween('r.created_at', $bounds);
-            });
+            if ($bounds) {
+                $query->where(function ($q) use ($bounds) {
+                    $q->whereBetween('r.reading_time', $bounds)
+                      ->orWhereBetween('r.created_at', $bounds);
+                });
+            }
+            if ($request->filled('device_id')) {
+                $query->where(function ($q) use ($request) {
+                    $q->where('d.device_code', $request->device_id)
+                      ->orWhere('r.device_id', $request->device_id);
+                });
+            }
+
+            // Limit maks 25k baris agar ekspor cepat dan hemat memori
+            $mapped = $query->limit(25000)->get();
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::warning('exportRawData main query error: '.$e->getMessage());
+            $mapped = collect();
         }
-        if ($request->filled('device_id')) {
-            $query->where(function ($q) use ($request) {
-                $q->where('d.device_code', $request->device_id)
-                  ->orWhere('r.device_id', $request->device_id);
-            });
-        }
-
-        // Limit maks 25k baris agar ekspor cepat dan hemat memori
-        $mapped = $query->limit(25000)->get();
 
         // Fallback: Jika filter tanggal tidak menemukan baris (mis. data baru dalam jam ini atau beda timezone), ambil 100 record telemetri terbaru
         if ($mapped->isEmpty()) {
