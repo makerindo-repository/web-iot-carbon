@@ -83,6 +83,19 @@ Route::middleware('auth:sanctum')->group(function () {
         // Model Performance (read)
         Route::get('/model-performance', [ModelPerformanceController::class, 'index']);
         Route::get('/model-performance/node/{deviceCode}', [ModelPerformanceController::class, 'perNode']);
+        Route::get('/test-model-debug', function() {
+            try {
+                $ctrl = new \App\Http\Controllers\Api\ModelPerformanceController();
+                return $ctrl->index();
+            } catch (\Throwable $e) {
+                return response()->json([
+                    'error' => $e->getMessage(),
+                    'file' => $e->getFile(),
+                    'line' => $e->getLine(),
+                    'trace' => explode("\n", $e->getTraceAsString())
+                ], 200);
+            }
+        });
 
         // About cards (write)
         Route::get('/about-cards/admin', [AboutCardController::class, 'adminIndex']);
