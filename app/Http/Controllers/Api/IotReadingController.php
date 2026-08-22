@@ -29,9 +29,8 @@ class IotReadingController extends Controller
             $query->whereBetween('reading_time', [$request->start_date, $request->end_date.' 23:59:59']);
         }
 
-        // Cap 1500 disamakan dgn permintaan polling frontend (App.tsx: /readings?limit=1500).
-        // Sebelumnya cap 500 diam-diam memotong data monitoring multi-node.
-        $limit = min((int) $request->get('limit', 100), 1500);
+        // Cap 50000 agar data monitoring multi-node berminggu-minggu terangkum penuh tanpa terpotong.
+        $limit = min((int) $request->get('limit', 100), 50000);
         $readings = $query->limit($limit)->get();
 
         return response()->json($readings->map(function ($r) {

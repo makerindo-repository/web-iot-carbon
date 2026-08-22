@@ -178,15 +178,13 @@ class NodeController extends Controller
         $windSpeed = $lastReading ? (float) ($lastReading->wind_speed_kmh ?? 0) : 0;
         $altitude = (float) ($d->altitude ?? $lastReading?->altitude_m ?? 0);
 
-        // Dynamic status check based on 10-minute timeout
+        // Dynamic status check: strictly online (Aktif) or offline (Tidak Aktif)
         $lastSeenTime = $d->last_seen_at ? Carbon::parse($d->last_seen_at) : ($lastReading ? Carbon::parse($lastReading->reading_time) : null);
         $computedStatus = 'offline';
         if ($lastSeenTime) {
             $diffMinutes = $lastSeenTime->diffInMinutes(now());
-            if ($diffMinutes <= 10) {
-                $computedStatus = ($d->device_status === 'warning') ? 'warning' : 'online';
-            } elseif ($diffMinutes <= 30) {
-                $computedStatus = 'warning';
+            if ($diffMinutes <= 30) {
+                $computedStatus = 'online';
             } else {
                 $computedStatus = 'offline';
             }
@@ -202,7 +200,7 @@ class NodeController extends Controller
             if (($lastReading->air_humidity_sensor ?? 50) < 30) $warningReasons[] = 'Kelembapan Sangat Rendah (<30%)';
             if ($batteryPercent < 20) $warningReasons[] = 'Baterai Lemah (<20%)';
         }
-        $hasWarning = !empty($warningReasons) || $computedStatus === 'warning';
+        $hasWarning = ($computedStatus === 'online') && !empty($warningReasons);
 
         return [
             'db_id' => $d->id, // Real database ID
