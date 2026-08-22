@@ -21,11 +21,11 @@ class ReportController extends Controller
             $format = $request->get('format', 'csv');
             $type = $request->get('type', 'raw-data');
 
-            // Validasi tanggal untuk tipe berat
+            // Validasi tanggal (nullable agar pratinjau cepat tanpa tanggal tetap jalan)
             if (in_array($type, ['raw-data', 'analysis'])) {
                 $request->validate([
-                    'start_date' => 'required|date',
-                    'end_date' => 'required|date|after_or_equal:start_date',
+                    'start_date' => 'nullable|date',
+                    'end_date' => 'nullable|date',
                 ]);
             }
 
@@ -37,6 +37,8 @@ class ReportController extends Controller
                 'system-logs' => $this->exportSystemLogs($request, $format),
                 default => $this->exportRawData($request, $format),
             };
+        } catch (\Illuminate\Validation\ValidationException $ve) {
+            throw $ve;
         } catch (\Throwable $e) {
             \Illuminate\Support\Facades\Log::error('ReportController@exportReport error: '.$e->getMessage()."\n".$e->getTraceAsString());
 
@@ -261,7 +263,16 @@ class ReportController extends Controller
         }
 
         // Limit maks 25.000 baris agar cepat dan hemat RAM
-        return $query->limit(25000)->get();
+        $res = $query->limit(25000)->get();
+
+        if ($res->isEmpty()) {
+            $res = IotReading::with($relations)
+                ->orderBy('reading_time', 'desc')
+                ->limit(100)
+                ->get();
+        }
+
+        return $res;
     }
 
     private function dateRangeBounds(Request $request): ?array
