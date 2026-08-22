@@ -220,6 +220,7 @@ class ModelPerformanceController extends Controller
             ->where('status', 'completed')
             ->where('predicted_for', '>=', $since)
             ->orderBy('predicted_for', 'desc')
+            ->limit(500)
             ->get();
 
         if ($forecasts->isEmpty()) {
@@ -238,7 +239,8 @@ class ModelPerformanceController extends Controller
         $readings = IotReading::where('device_id', $device->id)
             ->with(['device.landPlot', 'landPlot'])
             ->where('reading_time', '>=', $since)
-            ->orderBy('reading_time', 'asc')
+            ->orderBy('reading_time', 'desc')
+            ->limit(1000)
             ->get()
             ->keyBy(function ($reading) {
                 // Key by hour-rounded timestamp for matching
@@ -381,10 +383,13 @@ class ModelPerformanceController extends Controller
             $forecasts = AiForecastResult::where('status', 'completed')
                 ->where('predicted_for', '>=', $since)
                 ->orderBy('predicted_for', 'desc')
+                ->limit(1000)
                 ->get();
 
             $readings = IotReading::with(['device.landPlot', 'landPlot'])
                 ->where('reading_time', '>=', $since)
+                ->orderBy('reading_time', 'desc')
+                ->limit(2000)
                 ->get()
                 ->keyBy(function ($reading) {
                     $time = Carbon::parse($reading->reading_time ?? $reading->created_at ?? now());
