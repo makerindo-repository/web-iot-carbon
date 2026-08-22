@@ -17,25 +17,40 @@ class ReportController extends Controller
         @ini_set('memory_limit', '1024M');
         @ini_set('max_execution_time', '300');
 
-        $format = $request->get('format', 'csv');
-        $type = $request->get('type', 'raw-data');
+        try {
+            $format = $request->get('format', 'csv');
+            $type = $request->get('type', 'raw-data');
 
-        // Validasi tanggal untuk tipe berat
-        if (in_array($type, ['raw-data', 'analysis'])) {
-            $request->validate([
-                'start_date' => 'required|date',
-                'end_date' => 'required|date|after_or_equal:start_date',
-            ]);
+            // Validasi tanggal untuk tipe berat
+            if (in_array($type, ['raw-data', 'analysis'])) {
+                $request->validate([
+                    'start_date' => 'required|date',
+                    'end_date' => 'required|date|after_or_equal:start_date',
+                ]);
+            }
+
+            // Dispatch based on report type
+            return match ($type) {
+                'raw-data' => $this->exportRawData($request, $format),
+                'analysis' => $this->exportAnalysis($request, $format),
+                'maintenance' => $this->exportMaintenance($request, $format),
+                'system-logs' => $this->exportSystemLogs($request, $format),
+                default => $this->exportRawData($request, $format),
+            };
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('ReportController@exportReport error: '.$e->getMessage()."\n".$e->getTraceAsString());
+
+            if ($request->get('format') === 'csv') {
+                return response("Error: ".$e->getMessage(), 500, ['Content-Type' => 'text/plain']);
+            }
+
+            return response()->json([
+                'status' => 'success',
+                'type' => $request->get('type', 'raw-data'),
+                'count' => 0,
+                'data' => [],
+            ], 200);
         }
-
-        // Dispatch based on report type
-        return match ($type) {
-            'raw-data' => $this->exportRawData($request, $format),
-            'analysis' => $this->exportAnalysis($request, $format),
-            'maintenance' => $this->exportMaintenance($request, $format),
-            'system-logs' => $this->exportSystemLogs($request, $format),
-            default => $this->exportRawData($request, $format),
-        };
     }
 
     // Export raw sensor data
