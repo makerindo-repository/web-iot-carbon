@@ -77,14 +77,21 @@ class ReportController extends Controller
             ->orderBy('r.reading_time', 'desc');
 
         if ($bounds) {
-            $query->whereBetween('r.reading_time', $bounds);
+            $query->where(function ($q) use ($bounds) {
+                $q->whereBetween('r.reading_time', $bounds)
+                  ->orWhereBetween('r.created_at', $bounds);
+            });
         }
         if ($request->filled('device_id')) {
-            $query->where('d.device_code', $request->device_id);
+            $query->where(function ($q) use ($request) {
+                $q->where('d.device_code', $request->device_id)
+                  ->orWhere('r.device_code', $request->device_id)
+                  ->orWhere('r.device_id', $request->device_id);
+            });
         }
 
-        // Limit maks 150k baris
-        $mapped = $query->limit(150000)->get();
+        // Limit maks 25k baris agar ekspor cepat dan hemat memori
+        $mapped = $query->limit(25000)->get();
 
         // Convert stdClass list to array format for JSON/CSV response
         $mappedArray = collect($mapped)->map(fn($item) => (array) $item);
@@ -202,14 +209,21 @@ class ReportController extends Controller
             ->orderBy('reading_time', 'desc');
 
         if ($bounds = $this->dateRangeBounds($request)) {
-            $query->whereBetween('reading_time', $bounds);
+            $query->where(function ($q) use ($bounds) {
+                $q->whereBetween('reading_time', $bounds)
+                  ->orWhereBetween('created_at', $bounds);
+            });
         }
         if ($request->filled('device_id')) {
-            $query->whereHas('device', fn ($q) => $q->where('device_code', $request->device_id));
+            $query->where(function ($q) use ($request) {
+                $q->whereHas('device', fn ($dq) => $dq->where('device_code', $request->device_id))
+                  ->orWhere('device_code', $request->device_id)
+                  ->orWhere('device_id', $request->device_id);
+            });
         }
 
-        // Limit maks 150.000 baris agar data 3 bulan (105k) terangkum penuh saat ekspor
-        return $query->limit(150000)->get();
+        // Limit maks 25.000 baris agar cepat dan hemat RAM
+        return $query->limit(25000)->get();
     }
 
     private function dateRangeBounds(Request $request): ?array
