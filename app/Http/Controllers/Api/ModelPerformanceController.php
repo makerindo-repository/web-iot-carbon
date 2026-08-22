@@ -226,7 +226,8 @@ class ModelPerformanceController extends Controller
             ->get()
             ->keyBy(function ($reading) {
                 // Key by hour-rounded timestamp for matching
-                return $reading->reading_time->format('Y-m-d H:00:00');
+                $time = $reading->reading_time ?? $reading->created_at;
+                return $time ? $time->format('Y-m-d H:00:00') : now()->format('Y-m-d H:00:00');
             });
 
         // 3. Group forecasts by model+target+horizon, compute metrics
@@ -244,6 +245,9 @@ class ModelPerformanceController extends Controller
 
             foreach ($group as $forecast) {
                 // Find the actual reading at the predicted_for time
+                if (!$forecast->predicted_for) {
+                    continue;
+                }
                 $predictedForKey = $forecast->predicted_for->format('Y-m-d H:00:00');
                 $reading = $readings->get($predictedForKey);
 
@@ -365,7 +369,9 @@ class ModelPerformanceController extends Controller
             ->where('reading_time', '>=', $since)
             ->get()
             ->keyBy(function ($reading) {
-                return $reading->device_id.'|'.$reading->reading_time->format('Y-m-d H:00:00');
+                $time = $reading->reading_time ?? $reading->created_at;
+                $timeStr = $time ? $time->format('Y-m-d H:00:00') : now()->format('Y-m-d H:00:00');
+                return $reading->device_id.'|'.$timeStr;
             });
 
         $groups = $forecasts->groupBy(function ($f) {
@@ -381,6 +387,9 @@ class ModelPerformanceController extends Controller
             $actual = [];
 
             foreach ($group as $forecast) {
+                if (!$forecast->predicted_for) {
+                    continue;
+                }
                 $predictedForKey = $forecast->device_id.'|'.$forecast->predicted_for->format('Y-m-d H:00:00');
                 $reading = $readings->get($predictedForKey);
 
