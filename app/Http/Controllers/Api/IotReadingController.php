@@ -32,8 +32,8 @@ class IotReadingController extends Controller
             $query->whereBetween('reading_time', [$request->start_date, $request->end_date.' 23:59:59']);
         }
 
-        // Cap maksimal di 5000 record (sangat cukup untuk data 30 hari node tunggal) guna mencegah crash memori PHP-FPM.
-        $limit = min((int) $request->get('limit', 100), 5000);
+        // Cap maksimal di 25000 record (mencakup 7+ hari data 30-detik non-stop) guna keamanan RAM.
+        $limit = min((int) $request->get('limit', 100), 25000);
         $readings = $query->limit($limit)->get();
 
         return response()->json($readings->map(function ($r) {

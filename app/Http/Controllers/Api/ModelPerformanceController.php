@@ -64,9 +64,8 @@ class ModelPerformanceController extends Controller
         // 4. Historical Evaluation (evaluasi pada data historis nyata)
         $historicalPath = $this->bundlePath.'/evaluation_historical_20260506.json';
         $historical = $this->loadJson($historicalPath);
-        $usesLatestSintetik90 = ($comparison['evaluation_scope'] ?? null) === 'latest_sintetik_90_single_step';
 
-        if (! $comparison && ! $manifest) {
+        if (!is_array($comparison)) {
             $comparison = [
                 'evaluation_scope' => 'latest_sintetik_90_single_step',
                 'comparison_rows' => [
@@ -81,8 +80,13 @@ class ModelPerformanceController extends Controller
                     ['model' => 'SVM', 'target' => 'Carbon Potential Score', 'horizon_hours' => 0, 'MAE' => 2.40, 'RMSE' => 3.20, 'MAPE_pct' => 3.15, 'R2' => 0.8920],
                 ]
             ];
-            $usesLatestSintetik90 = true;
         }
+
+        if (!is_array($manifest)) {
+            $manifest = [];
+        }
+
+        $usesLatestSintetik90 = ($comparison['evaluation_scope'] ?? null) === 'latest_sintetik_90_single_step';
 
         // Coba dapatkan data agregasi global dari live database
         $globalEval = $this->getGlobalEvaluation(30);
