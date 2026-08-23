@@ -571,10 +571,10 @@ class ModelPerformanceController extends Controller
         }
 
         return [
-            'MAE' => round($mae, 4),
-            'RMSE' => round($rmse, 4),
-            'MAPE_pct' => $mapePct === null ? null : round($mapePct, 2),
-            'R2' => $r2 === null ? null : round($r2, 4),
+            'MAE' => is_nan($mae) || is_infinite($mae) ? 0.0 : round($mae, 4),
+            'RMSE' => is_nan($rmse) || is_infinite($rmse) ? 0.0 : round($rmse, 4),
+            'MAPE_pct' => $mapePct === null || is_nan($mapePct) || is_infinite($mapePct) ? null : round($mapePct, 2),
+            'R2' => $r2 === null || is_nan($r2) || is_infinite($r2) ? null : round($r2, 4),
         ];
     }
 
