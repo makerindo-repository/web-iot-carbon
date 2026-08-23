@@ -68,29 +68,17 @@ class ReportController extends Controller
                     \Illuminate\Support\Facades\DB::raw("COALESCE(d.id, r.device_id, 1) as `ID Perangkat`"),
                     \Illuminate\Support\Facades\DB::raw("COALESCE(d.device_code, 'AGRISENSE-CC-001') as `Kode RH Perangkat`"),
                     \Illuminate\Support\Facades\DB::raw("COALESCE(d.name, d.device_code, 'NODE AGRISENSE') as `Nama Perangkat`"),
-                    \Illuminate\Support\Facades\DB::raw("ROUND(COALESCE(r.wind_speed_kmh, 0), 1) as `Kecepatan Angin (km/h)`"),
-                    \Illuminate\Support\Facades\DB::raw("
-                        CASE 
-                            WHEN ROUND(COALESCE(r.wind_direction_deg, (SELECT wind_direction_deg FROM bmkg_readings WHERE plot_id = d.plot_id ORDER BY timestamp_bmkg DESC LIMIT 1), 0) / 45) % 8 = 0 THEN 'Utara (N)'
-                            WHEN ROUND(COALESCE(r.wind_direction_deg, (SELECT wind_direction_deg FROM bmkg_readings WHERE plot_id = d.plot_id ORDER BY timestamp_bmkg DESC LIMIT 1), 0) / 45) % 8 = 1 THEN 'Timur Laut (NE)'
-                            WHEN ROUND(COALESCE(r.wind_direction_deg, (SELECT wind_direction_deg FROM bmkg_readings WHERE plot_id = d.plot_id ORDER BY timestamp_bmkg DESC LIMIT 1), 0) / 45) % 8 = 2 THEN 'Timur (E)'
-                            WHEN ROUND(COALESCE(r.wind_direction_deg, (SELECT wind_direction_deg FROM bmkg_readings WHERE plot_id = d.plot_id ORDER BY timestamp_bmkg DESC LIMIT 1), 0) / 45) % 8 = 3 THEN 'Tenggara (SE)'
-                            WHEN ROUND(COALESCE(r.wind_direction_deg, (SELECT wind_direction_deg FROM bmkg_readings WHERE plot_id = d.plot_id ORDER BY timestamp_bmkg DESC LIMIT 1), 0) / 45) % 8 = 4 THEN 'Selatan (S)'
-                            WHEN ROUND(COALESCE(r.wind_direction_deg, (SELECT wind_direction_deg FROM bmkg_readings WHERE plot_id = d.plot_id ORDER BY timestamp_bmkg DESC LIMIT 1), 0) / 45) % 8 = 5 THEN 'Barat Daya (SW)'
-                            WHEN ROUND(COALESCE(r.wind_direction_deg, (SELECT wind_direction_deg FROM bmkg_readings WHERE plot_id = d.plot_id ORDER BY timestamp_bmkg DESC LIMIT 1), 0) / 45) % 8 = 6 THEN 'Barat (W)'
-                            WHEN ROUND(COALESCE(r.wind_direction_deg, (SELECT wind_direction_deg FROM bmkg_readings WHERE plot_id = d.plot_id ORDER BY timestamp_bmkg DESC LIMIT 1), 0) / 45) % 8 = 7 THEN 'Barat Laut (NW)'
-                            ELSE 'Utara (N)'
-                        END as `Arah Angin (Stasiun BMKG)`
-                    "),
-                    \Illuminate\Support\Facades\DB::raw("ROUND(COALESCE(r.latitude, d.latitude, -6.830000), 6) as `Latitude`"),
-                    \Illuminate\Support\Facades\DB::raw("ROUND(COALESCE(r.longitude, d.longitude, 107.910000), 6) as `Longitude`"),
-                    \Illuminate\Support\Facades\DB::raw("ROUND(COALESCE(NULLIF(r.altitude_m, 0), NULLIF(d.altitude, 0), 720), 0) as `Elevasi (MDPL)`"),
-                    \Illuminate\Support\Facades\DB::raw("CONCAT(COALESCE(r.battery_percent, 85), '% (', ROUND(COALESCE(r.battery_voltage, 12.4), 2), 'V)') as `Baterai & Tegangan`"),
+                    \Illuminate\Support\Facades\DB::raw("ROUND(COALESCE(d.latitude, -6.830000), 6) as `Latitude`"),
+                    \Illuminate\Support\Facades\DB::raw("ROUND(COALESCE(d.longitude, 107.910000), 6) as `Longitude`"),
+                    \Illuminate\Support\Facades\DB::raw("ROUND(COALESCE(NULLIF(d.altitude, 0), 720), 0) as `Elevasi (MDPL)`"),
+                    \Illuminate\Support\Facades\DB::raw("CONCAT(COALESCE(d.battery_percent, 85), '% (', ROUND(COALESCE(d.battery_voltage, 12.4), 2), 'V)') as `Baterai & Tegangan`"),
                     \Illuminate\Support\Facades\DB::raw("ROUND(COALESCE(r.co2_sensor, 0), 1) as `CO2 (ppm)`"),
-                    \Illuminate\Support\Facades\DB::raw("ROUND(COALESCE(r.ch4_ppm, 0), 1) as `CH4 (ppm)`"),
-                    \Illuminate\Support\Facades\DB::raw("ROUND(COALESCE(r.no2_ppb, 0), 1) as `N₂O (ppb)`"),
+                    \Illuminate\Support\Facades\DB::raw("ROUND(COALESCE(r.carbon_flux, 0), 4) as `Carbon Flux (NEE)`"),
                     \Illuminate\Support\Facades\DB::raw("ROUND(COALESCE(r.air_temperature_sensor, 0), 1) as `Suhu Udara (°C)`"),
                     \Illuminate\Support\Facades\DB::raw("ROUND(COALESCE(r.air_humidity_sensor, 0), 1) as `Kelembapan Udara (%)`"),
+                    \Illuminate\Support\Facades\DB::raw("ROUND(COALESCE(r.soil_temperature, 0), 1) as `Suhu Tanah (°C)`"),
+                    \Illuminate\Support\Facades\DB::raw("ROUND(COALESCE(r.soil_moisture, 0), 1) as `Kelembapan Tanah (%)`"),
+                    \Illuminate\Support\Facades\DB::raw("ROUND(COALESCE(r.soil_ph, 0), 1) as `pH Tanah`"),
                 ])
                 ->orderBy(\Illuminate\Support\Facades\DB::raw("COALESCE(r.reading_time, r.created_at)"), 'desc');
 
@@ -123,16 +111,17 @@ class ReportController extends Controller
                     \Illuminate\Support\Facades\DB::raw("COALESCE(d.id, r.device_id, 1) as `ID Perangkat`"),
                     \Illuminate\Support\Facades\DB::raw("COALESCE(d.device_code, 'AGRISENSE-CC-001') as `Kode RH Perangkat`"),
                     \Illuminate\Support\Facades\DB::raw("COALESCE(d.name, d.device_code, 'NODE AGRISENSE') as `Nama Perangkat`"),
-                    \Illuminate\Support\Facades\DB::raw("ROUND(COALESCE(r.wind_speed_kmh, 0), 1) as `Kecepatan Angin (km/h)`"),
-                    \Illuminate\Support\Facades\DB::raw("ROUND(COALESCE(r.latitude, d.latitude, -6.830000), 6) as `Latitude`"),
-                    \Illuminate\Support\Facades\DB::raw("ROUND(COALESCE(r.longitude, d.longitude, 107.910000), 6) as `Longitude`"),
-                    \Illuminate\Support\Facades\DB::raw("ROUND(COALESCE(NULLIF(r.altitude_m, 0), NULLIF(d.altitude, 0), 720), 0) as `Elevasi (MDPL)`"),
-                    \Illuminate\Support\Facades\DB::raw("CONCAT(COALESCE(r.battery_percent, 85), '% (', ROUND(COALESCE(r.battery_voltage, 12.4), 2), 'V)') as `Baterai & Tegangan`"),
+                    \Illuminate\Support\Facades\DB::raw("ROUND(COALESCE(d.latitude, -6.830000), 6) as `Latitude`"),
+                    \Illuminate\Support\Facades\DB::raw("ROUND(COALESCE(d.longitude, 107.910000), 6) as `Longitude`"),
+                    \Illuminate\Support\Facades\DB::raw("ROUND(COALESCE(NULLIF(d.altitude, 0), 720), 0) as `Elevasi (MDPL)`"),
+                    \Illuminate\Support\Facades\DB::raw("CONCAT(COALESCE(d.battery_percent, 85), '% (', ROUND(COALESCE(d.battery_voltage, 12.4), 2), 'V)') as `Baterai & Tegangan`"),
                     \Illuminate\Support\Facades\DB::raw("ROUND(COALESCE(r.co2_sensor, 0), 1) as `CO2 (ppm)`"),
-                    \Illuminate\Support\Facades\DB::raw("ROUND(COALESCE(r.ch4_ppm, 0), 1) as `CH4 (ppm)`"),
-                    \Illuminate\Support\Facades\DB::raw("ROUND(COALESCE(r.no2_ppb, 0), 1) as `N₂O (ppb)`"),
+                    \Illuminate\Support\Facades\DB::raw("ROUND(COALESCE(r.carbon_flux, 0), 4) as `Carbon Flux (NEE)`"),
                     \Illuminate\Support\Facades\DB::raw("ROUND(COALESCE(r.air_temperature_sensor, 0), 1) as `Suhu Udara (°C)`"),
                     \Illuminate\Support\Facades\DB::raw("ROUND(COALESCE(r.air_humidity_sensor, 0), 1) as `Kelembapan Udara (%)`"),
+                    \Illuminate\Support\Facades\DB::raw("ROUND(COALESCE(r.soil_temperature, 0), 1) as `Suhu Tanah (°C)`"),
+                    \Illuminate\Support\Facades\DB::raw("ROUND(COALESCE(r.soil_moisture, 0), 1) as `Kelembapan Tanah (%)`"),
+                    \Illuminate\Support\Facades\DB::raw("ROUND(COALESCE(r.soil_ph, 0), 1) as `pH Tanah`"),
                 ])
                 ->orderBy(\Illuminate\Support\Facades\DB::raw("COALESCE(r.reading_time, r.created_at)"), 'desc')
                 ->limit(100)
@@ -168,12 +157,13 @@ class ReportController extends Controller
                 'Rata-rata CO2 (ppm)' => round($readings->avg('co2_sensor'), 1),
                 'Min CO2' => round($readings->min('co2_sensor'), 1),
                 'Max CO2' => round($readings->max('co2_sensor'), 1),
-                'Rata-rata CH4 (ppm)' => round($readings->avg('ch4_ppm'), 1),
-                'Rata-rata N₂O (ppb)' => round($readings->avg('no2_ppb'), 1),
-                'Rata-rata Suhu (°C)' => round($readings->avg('air_temperature_sensor'), 1),
-                'Rata-rata Kelembapan (%)' => round($readings->avg('air_humidity_sensor'), 1),
-                'Rata-rata Kecepatan Angin (km/h)' => round($readings->avg('wind_speed_kmh'), 1),
-                'Rata-rata Baterai (%)' => round($readings->avg('battery_percent'), 0),
+                'Rata-rata Carbon Flux (NEE)' => round($readings->avg('carbon_flux'), 4),
+                'Rata-rata Suhu Udara (°C)' => round($readings->avg('air_temperature_sensor'), 1),
+                'Rata-rata Kelembapan Udara (%)' => round($readings->avg('air_humidity_sensor'), 1),
+                'Rata-rata Suhu Tanah (°C)' => round($readings->avg('soil_temperature'), 1),
+                'Rata-rata Kelembapan Tanah (%)' => round($readings->avg('soil_moisture'), 1),
+                'Rata-rata pH Tanah' => round($readings->avg('soil_ph'), 1),
+                'Baterai Perangkat (%)' => $device?->battery_percent ?? 85,
             ];
         })->values();
 
