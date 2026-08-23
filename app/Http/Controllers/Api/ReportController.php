@@ -64,9 +64,10 @@ class ReportController extends Controller
             $query = \Illuminate\Support\Facades\DB::table('iot_readings as r')
                 ->leftJoin('devices as d', 'r.device_id', '=', 'd.id')
                 ->select([
+                    \Illuminate\Support\Facades\DB::raw("r.id as `ID Telemetry`"),
                     \Illuminate\Support\Facades\DB::raw("DATE_FORMAT(COALESCE(r.reading_time, r.created_at), '%d/%m/%Y %H:%i:%s') as `Waktu Telemetry`"),
                     \Illuminate\Support\Facades\DB::raw("COALESCE(d.id, r.device_id, 1) as `ID Perangkat`"),
-                    \Illuminate\Support\Facades\DB::raw("COALESCE(d.device_code, 'AGRISENSE-CC-001') as `Kode RH Perangkat`"),
+                    \Illuminate\Support\Facades\DB::raw("COALESCE(d.device_code, 'AGRISENSE-CC-001') as `Kode Perangkat`"),
                     \Illuminate\Support\Facades\DB::raw("COALESCE(d.name, d.device_code, 'NODE AGRISENSE') as `Nama Perangkat`"),
                     \Illuminate\Support\Facades\DB::raw("ROUND(COALESCE(d.latitude, -6.830000), 6) as `Latitude`"),
                     \Illuminate\Support\Facades\DB::raw("ROUND(COALESCE(d.longitude, 107.910000), 6) as `Longitude`"),
@@ -107,9 +108,10 @@ class ReportController extends Controller
             $mapped = \Illuminate\Support\Facades\DB::table('iot_readings as r')
                 ->leftJoin('devices as d', 'r.device_id', '=', 'd.id')
                 ->select([
+                    \Illuminate\Support\Facades\DB::raw("r.id as `ID Telemetry`"),
                     \Illuminate\Support\Facades\DB::raw("DATE_FORMAT(COALESCE(r.reading_time, r.created_at), '%d/%m/%Y %H:%i:%s') as `Waktu Telemetry`"),
                     \Illuminate\Support\Facades\DB::raw("COALESCE(d.id, r.device_id, 1) as `ID Perangkat`"),
-                    \Illuminate\Support\Facades\DB::raw("COALESCE(d.device_code, 'AGRISENSE-CC-001') as `Kode RH Perangkat`"),
+                    \Illuminate\Support\Facades\DB::raw("COALESCE(d.device_code, 'AGRISENSE-CC-001') as `Kode Perangkat`"),
                     \Illuminate\Support\Facades\DB::raw("COALESCE(d.name, d.device_code, 'NODE AGRISENSE') as `Nama Perangkat`"),
                     \Illuminate\Support\Facades\DB::raw("ROUND(COALESCE(d.latitude, -6.830000), 6) as `Latitude`"),
                     \Illuminate\Support\Facades\DB::raw("ROUND(COALESCE(d.longitude, 107.910000), 6) as `Longitude`"),
@@ -148,7 +150,7 @@ class ReportController extends Controller
 
             return [
                 'ID Perangkat' => $device?->id ?? 'N/A',
-                'Kode RH Perangkat' => $deviceCode,
+                'Kode Perangkat' => $deviceCode,
                 'Nama Perangkat' => $device?->name ?? $deviceCode,
                 'Lahan Induk' => $device?->landPlot?->plot_name ?? 'N/A',
                 'Jumlah Pembacaan' => $count,
@@ -193,7 +195,7 @@ class ReportController extends Controller
 
             return [
                 'ID Perangkat' => $d->id,
-                'Kode RH Perangkat' => $d->device_code,
+                'Kode Perangkat' => $d->device_code,
                 'Nama Perangkat' => $d->name ?? $d->device_code,
                 'Lahan Induk' => $d->landPlot?->plot_name ?? 'N/A',
                 'Status Node' => ucfirst($d->status ?? 'Aktif'),
