@@ -223,6 +223,7 @@ class NodeController extends Controller
             'ch4_ppm' => (float) ($lastReading->ch4_ppm ?? 0),
             'no2_ppb' => (float) ($lastReading->no2_ppb ?? 0),
             'lastSeen' => $lastSeenTime ? $lastSeenTime->toIso8601String() : null,
+            'last_seen_at' => $lastSeenTime ? $lastSeenTime->toIso8601String() : null,
             'firmware_version' => $d->firmware_version ?? '1.0.0',
             'lahanId' => $d->plot_id ? (string) $d->plot_id : '',
             'gardenId' => $d->garden_id ? (string) $d->garden_id : '',
